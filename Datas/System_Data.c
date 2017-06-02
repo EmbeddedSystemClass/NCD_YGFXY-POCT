@@ -111,11 +111,11 @@ void setSystemDateTime(DateTime * dateTime)
 	vTaskSuspendAll();
 	
 	systemData.systemDateTime.year = dateTime->year;
-	systemData.systemDateTime.year = dateTime->year;
-	systemData.systemDateTime.year = dateTime->year;
-	systemData.systemDateTime.year = dateTime->year;
-	systemData.systemDateTime.year = dateTime->year;
-	systemData.systemDateTime.year = dateTime->year;
+	systemData.systemDateTime.month = dateTime->month;
+	systemData.systemDateTime.day = dateTime->day;
+	systemData.systemDateTime.hour = dateTime->hour;
+	systemData.systemDateTime.min = dateTime->min;
+	systemData.systemDateTime.sec = dateTime->sec;
 	
 	xTaskResumeAll();
 }

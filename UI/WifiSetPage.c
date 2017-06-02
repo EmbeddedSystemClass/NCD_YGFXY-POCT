@@ -412,8 +412,6 @@ static void CheckIsNeedKey(void)
 
 static MyState_TypeDef connectWifiFun(void)
 {
-	unsigned char i = 0;
-	
 	SendKeyCode(4);
 
 	if(My_Fail == ConnectWifi(S_WifiPageBuffer->wifip))

@@ -8,7 +8,7 @@
 /***************************************************************************************************/
 /******************************************Header List********************************************/
 /***************************************************************************************************/
-#include	"UserDao.h"
+#include	"DeviceDao.h"
 
 #include	"CRC16.h"
 #include	"MyMem.h"
@@ -34,26 +34,26 @@
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-MyState_TypeDef SaveUserData(Operator * user)
+MyState_TypeDef SaveDeviceToFile(Device * device)
 {
 	FatfsFileInfo_Def * myfile = NULL;
 	MyState_TypeDef statues = My_Fail;
 	
 	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
 	
-	if(myfile)
+	if(myfile && device)
 	{
 		memset(myfile, 0, sizeof(FatfsFileInfo_Def));
 
-		myfile->res = f_open(&(myfile->file), "0:/Testers.ncd", FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
+		myfile->res = f_open(&(myfile->file), "0:/Device.ncd", FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
 			
 		if(FR_OK == myfile->res)
 		{
 			f_lseek(&(myfile->file), 0);
 			
-			myfile->res = f_write(&(myfile->file), user, AllOperatorStructSize, &(myfile->bw));
+			myfile->res = f_write(&(myfile->file), device, DeviceStructSize, &(myfile->bw));
 				
-			if((FR_OK == myfile->res)&&(myfile->bw == AllOperatorStructSize))
+			if((FR_OK == myfile->res)&&(myfile->bw == DeviceStructSize))
 				statues = My_Pass;
 				
 			f_close(&(myfile->file));
@@ -65,35 +65,35 @@ MyState_TypeDef SaveUserData(Operator * user)
 	return statues;
 }
 
-MyState_TypeDef ReadUserData(Operator * user)
+MyState_TypeDef ReadDeviceFromFile(Device * device)
 {
 	FatfsFileInfo_Def * myfile = NULL;
 	MyState_TypeDef statues = My_Fail;
-	unsigned char i=0;
 	
 	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
 
-	if(myfile && user)
+	if(myfile && device)
 	{
 		memset(myfile, 0, sizeof(FatfsFileInfo_Def));
 
-		myfile->res = f_open(&(myfile->file), "0:/Testers.ncd", FA_READ);
+		myfile->res = f_open(&(myfile->file), "0:/Device.ncd", FA_READ);
 		
 		if(FR_OK == myfile->res)
 		{
 			f_lseek(&(myfile->file), 0);
 					
-			for(i=0; i<MaxOperatorSize; i++)
-			{
-				f_read(&(myfile->file), user, OneOperatorStructSize, &(myfile->br));
-				
-				if(user->crc == CalModbusCRC16Fun1(user, OneOperatorStructSizeWithOutCrc))
-					user++;
-			}
+			f_read(&(myfile->file), device, DeviceStructSize, &(myfile->br));
 			
 			statues = My_Pass;
 			
 			f_close(&(myfile->file));
+		}
+		else if(FR_NO_FILE == myfile->res)
+		{
+			memset(device, 0, DeviceStructSize);
+			device->crc = CalModbusCRC16Fun1(device, DeviceStructCrcSize);
+			
+			statues = My_Pass;
 		}
 	}	
 	MyFree(myfile);
@@ -101,11 +101,11 @@ MyState_TypeDef ReadUserData(Operator * user)
 	return statues;
 }
 
-MyState_TypeDef ClearUsers(void)
+MyState_TypeDef deleteDeviceFile(void)
 {
 	FRESULT res;
 	
-	res = f_unlink("0:/Testers.ncd");
+	res = f_unlink("0:/Device.ncd");
 	
 	if((FR_OK == res) || (FR_NO_FILE == res))
 		return My_Pass;

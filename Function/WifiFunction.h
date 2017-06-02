@@ -3,6 +3,7 @@
 
 #include	"Define.h"
 #include	"NetWork.h"
+#include	"SystemSet_Data.h"
 
 typedef enum
 { 
@@ -12,7 +13,7 @@ typedef enum
 	PWM_Mode = 3,
 }WIFI_WorkMode_DefType;
 
-MyState_TypeDef WIFIInit(void);
+void WIFIInit(SystemSetData * systemSetData);
 
 MyState_TypeDef takeWifiMutex(portTickType xBlockTime);
 void giveWifixMutex(void);

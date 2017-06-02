@@ -42,7 +42,7 @@ unsigned char motorstautes = 0;
 
 void MotorMoveTo(unsigned int location, unsigned char mode)
 {
-	setSystemMotorLocation(location);
+	setSystemMotorTargetLocation(location);
 	
 	if(getSystemRunTimeData()->motorData.targetLocation > getSystemRunTimeData()->motorData.location)
 		SetDRVDir(Forward);

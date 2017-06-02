@@ -81,7 +81,7 @@ static void activityStart(void)
 		
 		while(ReadBarCodeFunction((char *)(S_SetDeviceIDPage->tempbuf), 100) > 0)
 			;
-		dspDeviceId(S_SetDeviceIDPage->systemSetData.device.deviceid);
+		dspDeviceId(S_SetDeviceIDPage->systemSetData.deviceId);
 	}
 	
 	SelectPage(104);
@@ -118,7 +118,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 				memcpy(&(S_SetDeviceIDPage->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
 				
 				//更新副本中的is
-				memcpy(S_SetDeviceIDPage->systemSetData.device.deviceid, S_SetDeviceIDPage->deviceId, DeviceIdLen);
+				memcpy(S_SetDeviceIDPage->systemSetData.deviceId, S_SetDeviceIDPage->deviceId, DeviceIdLen);
 				if(My_Pass == SaveSystemSetData(&(S_SetDeviceIDPage->systemSetData)))
 				{
 					SendKeyCode(1);

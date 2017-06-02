@@ -10,7 +10,7 @@
 #pragma pack(1)
 typedef struct SystemSetData_Tag
 {		
-	Device device;														//设备信息
+	char deviceId[DeviceIdLen];														//设备信息
 	WireNetSet wireNetSet;												//有线网设置
 	ServerSet serverSet;												//服务器设置
 	bool isAutoPrint;													//是否自动打印

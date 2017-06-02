@@ -6,7 +6,7 @@
 #include	"MyMem.h"
 #include	"CRC16.h"
 #include	"SystemSetPage.h"
-#include	"UserDao.h"
+#include	"DeviceDao.h"
 #include	"MyTools.h"
 #include	"SleepPage.h"
 
@@ -79,7 +79,7 @@ static void activityStart(void)
 	if(S_UserMPageBuffer)
 	{
 		/*读取所有操作人*/
-		ReadUserData(S_UserMPageBuffer->user);
+		ReadDeviceFromFile(&(S_UserMPageBuffer->device));
 		
 		S_UserMPageBuffer->pageindex = 1;
 		S_UserMPageBuffer->selectindex = 0;
@@ -131,7 +131,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		{
 			if(S_UserMPageBuffer->pageindex < (MaxOperatorSize / MaxPageShowOperatorSize))
 			{
-				S_UserMPageBuffer->tempuser = &S_UserMPageBuffer->user[(S_UserMPageBuffer->pageindex)*MaxPageShowOperatorSize];
+				S_UserMPageBuffer->tempuser = &S_UserMPageBuffer->device.operators[(S_UserMPageBuffer->pageindex)*MaxPageShowOperatorSize];
 			
 				if(S_UserMPageBuffer->tempuser->crc == CalModbusCRC16Fun1(S_UserMPageBuffer->tempuser, OneOperatorStructSizeWithOutCrc))
 				{
@@ -147,7 +147,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		/*选择操作人*/
 		else if((S_UserMPageBuffer->lcdinput[0] >= 0x1d07)&&(S_UserMPageBuffer->lcdinput[0] <= 0x1d0B))
 		{
-			S_UserMPageBuffer->tempuser = &S_UserMPageBuffer->user[(S_UserMPageBuffer->pageindex - 1)*MaxPageShowOperatorSize + S_UserMPageBuffer->lcdinput[0] - 0x1d07];
+			S_UserMPageBuffer->tempuser = &S_UserMPageBuffer->device.operators[(S_UserMPageBuffer->pageindex - 1)*MaxPageShowOperatorSize + S_UserMPageBuffer->lcdinput[0] - 0x1d07];
 			
 			if(S_UserMPageBuffer->tempuser->crc == CalModbusCRC16Fun1(S_UserMPageBuffer->tempuser, OneOperatorStructSizeWithOutCrc))
 			{
@@ -273,7 +273,7 @@ static void ShowList(void)
 	
 	i = (S_UserMPageBuffer->pageindex-1)*MaxPageShowOperatorSize;
 	
-	S_UserMPageBuffer->tempuser = &(S_UserMPageBuffer->user[i]);
+	S_UserMPageBuffer->tempuser = &(S_UserMPageBuffer->device.operators[i]);
 	
 	/*显示列表数据*/
 	for(i=0; i<MaxPageShowOperatorSize; i++)
@@ -297,7 +297,7 @@ static void ShowDetail(void)
 	{
 		i = (S_UserMPageBuffer->pageindex-1)*MaxPageShowOperatorSize + S_UserMPageBuffer->selectindex-1;
 	
-		memcpy(&(S_UserMPageBuffer->tempnewuser), &(S_UserMPageBuffer->user[i]), OneOperatorStructSize);
+		memcpy(&(S_UserMPageBuffer->tempnewuser), &(S_UserMPageBuffer->device.operators[i]), OneOperatorStructSize);
 	}
 	else
 		memset(&(S_UserMPageBuffer->tempnewuser), 0, OneOperatorStructSize);

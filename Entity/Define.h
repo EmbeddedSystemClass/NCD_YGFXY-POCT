@@ -34,9 +34,13 @@
 
 #define	GB_ServerPort		8080
 
-#define	ReadTimeUrl					"ReadTime\0"
-#define	CheckDeviceInfoIsChangedUrl	"CheckDeviceInfoIsChanged\0"
+#define	HttpResponeOK				"HTTP/1.1 200 OK\0"
+#define	ReadTimeUrl					"DeviceReadTime\0"
+#define	QueryDeviceByDeviceIdUrl	"DeviceQueryDeviceByDeviceId\0"
 
+
+/*SD卡文件名*/
+#define	DeviceAdjustFileName		"0:/Dadj.ncd\0"
 /**********************************************************************************************************/
 /******************************************操作结果变量*************************************************/
 /**********************************************************************************************************/

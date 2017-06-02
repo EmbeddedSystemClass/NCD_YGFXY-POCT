@@ -11,7 +11,7 @@ typedef struct UserMPageBuffer_tag {
 	unsigned char pageindex;										//页面索引
 	unsigned char filemaxitem;							//当前文件保存数据数目
 	unsigned char filemaxpagenum;						//当前文件保存数据的页数
-	Operator user[MaxOperatorSize];									//选中的人
+	Device device;									//选中的人
 	Operator * tempuser;
 	Operator tempnewuser;
 	unsigned short lcdinput[100];

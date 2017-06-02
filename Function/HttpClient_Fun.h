@@ -9,14 +9,14 @@
 #include	"HttpPostTool.h"
 
 
-#pragma pack(1)
 typedef struct HttpClientBuffer_Tag
 {
 	SystemSetData systemSetData;
 	HttpPostBuffer httpPostBuffer;
 	char tempBuffer[1024];
+	DateTime dateTime;
 }HttpClientBuffer;
-#pragma pack()
+
 
 #define	httpClientBufferStructSize	sizeof(HttpClientBuffer)
 

@@ -932,6 +932,11 @@
               <FileType>5</FileType>
               <FilePath>..\Entity\NetWork.h</FilePath>
             </File>
+            <File>
+              <FileName>DeviceAdjust.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\DeviceAdjust.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -993,11 +998,6 @@
               <FilePath>..\Daos\AppFileDao.c</FilePath>
             </File>
             <File>
-              <FileName>UserDao.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Daos\UserDao.c</FilePath>
-            </File>
-            <File>
               <FileName>WifiDao.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Daos\WifiDao.c</FilePath>
@@ -1006,6 +1006,16 @@
               <FileName>RemoteSoftDao.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Daos\RemoteSoftDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceAdjustDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceAdjustDao.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1111,6 +1121,16 @@
               <FileName>HttpPostTool.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\COM\HttpPostTool.c</FilePath>
+            </File>
+            <File>
+              <FileName>JsonToObject.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\COM\JsonToObject.c</FilePath>
+            </File>
+            <File>
+              <FileName>Utf8ToGBK.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\COM\Utf8ToGBK.c</FilePath>
             </File>
           </Files>
         </Group>

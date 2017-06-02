@@ -11,7 +11,6 @@
 /***************************************************************************************************/
 #include	"WifiFunction.h"
 
-#include	"ServerFun.h"
 #include 	"Usart4_Driver.h"
 #include	"QueueUnits.h"
 
@@ -37,7 +36,7 @@ static xSemaphoreHandle xWifiMutex = NULL;									//WIFI»¥³âÁ¿
 /***************************************************************************************************/
 static MyState_TypeDef ComWithWIFI(char * cmd, const char *strcmp, char *buf, unsigned short buflen, portTickType xBlockTime);
 static void ProgressWifiListData(WIFI_Def *wifis, char *buf);
-static MyState_TypeDef SetWifiServerInfo(void);
+static MyState_TypeDef SetWifiServerInfo(SystemSetData * systemSetData);
 static MyState_TypeDef SetWifiDefaultWorkMode(void);
 static MyState_TypeDef SetWifiWorkInSTAMode(void);
 /***************************************************************************************************/
@@ -113,15 +112,13 @@ static MyState_TypeDef ComWithWIFI(char * cmd, const char *strcmp, char *buf, un
 }
 
 
-MyState_TypeDef WIFIInit(void)
+void WIFIInit(SystemSetData * systemSetData)
 {
-	MyState_TypeDef statues = My_Fail;
-	
 	vSemaphoreCreateBinary(xWifiMutex);
 	
 	SetWifiWorkInAT(AT_Mode);
 
-	SetWifiServerInfo();
+	SetWifiServerInfo(systemSetData);
 
 	SetWifiDefaultWorkMode();
 	
@@ -129,7 +126,6 @@ MyState_TypeDef WIFIInit(void)
 	
 	RestartWifi();
 
-	return statues;
 }
 /***************************************************************************************************
 *FunctionName£ºSetWifiWorkInAT
@@ -558,7 +554,7 @@ unsigned char GetWifiIndicator(void)
 	return ind;
 }
 
-static MyState_TypeDef SetWifiServerInfo(void)
+static MyState_TypeDef SetWifiServerInfo(SystemSetData * systemSetData)
 {
 	char *txbuf = NULL; 
 	MyState_TypeDef statues = My_Fail;
@@ -567,7 +563,9 @@ static MyState_TypeDef SetWifiServerInfo(void)
 	txbuf = MyMalloc(500);
 	if(txbuf)
 	{
-		if(My_Pass == ComWithWIFI("AT+NETP=TCP,CLIENT,8080,116.62.108.201\r\n", "+ok", txbuf, 100, 1000 * portTICK_RATE_MS))
+		sprintf(txbuf, "AT+NETP=TCP,CLIENT,%d,%d.%d.%d.%d\r\n\0", systemSetData->serverSet.serverPort, systemSetData->serverSet.serverIP.ip_1, 
+			systemSetData->serverSet.serverIP.ip_2, systemSetData->serverSet.serverIP.ip_3, systemSetData->serverSet.serverIP.ip_4);
+		if(My_Pass == ComWithWIFI(txbuf, "+ok", txbuf, 100, 1000 * portTICK_RATE_MS))
 			statues = My_Pass;
 	}
 	MyFree(txbuf);

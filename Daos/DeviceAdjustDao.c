@@ -1,26 +1,27 @@
 /***************************************************************************************************
-*FileName:SystemResetFun
-*Description:	恢复出厂设置
+*FileName: DeviceAdjustDao
+*Description: 读写设备校准记录
 *Author: xsx_kair
-*Data:2017年2月16日11:16:38
+*Data: 2017年6月2日 15:53:25
 ***************************************************************************************************/
 
 /***************************************************************************************************/
 /******************************************Header List********************************************/
 /***************************************************************************************************/
-#include	"SystemResetFun.h"
+#include	"DeviceAdjustDao.h"
 
-#include	"SystemSet_Dao.h"
-#include	"DeviceDao.h"
-#include	"WifiDao.h"
-
-#include	"SystemSet_Data.h"
-
+#include	"CRC16.h"
 #include	"MyMem.h"
-#include	"String.h"
+
+#include	"ff.h"
+
+#include	<string.h>
+#include	"stdio.h"
+#include 	"stdlib.h"
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
+
 
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -33,61 +34,80 @@
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-/***************************************************************************************************
-*FunctionName: SystemReset
-*Description: 恢复出厂设置
-*Input: 
-*Output: 
-*Return: 
-*Author: xsx
-*Date: 2017年2月16日11:20:46
-***************************************************************************************************/
-MyState_TypeDef SystemReset(void)
+MyState_TypeDef SaveDeviceAdjustToFile(DeviceAdjust * deviceAdjust)
 {
-	SystemSetData * systemSetData = NULL;
+	FatfsFileInfo_Def * myfile = NULL;
+	MyState_TypeDef statues = My_Fail;
 	
-	systemSetData = MyMalloc(SystemSetDataStructSize * 2);
-	if(systemSetData)
+	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
+	
+	if(myfile && deviceAdjust)
 	{
-		//读取当前设置
-		memcpy(&(systemSetData[0]), getGBSystemSetData(), SystemSetDataStructSize);
-		//恢复默认
-		setDefaultSystemSetData(&(systemSetData[1]));
-		
-		//保留设备ID
-		memcpy(systemSetData[1].deviceId, systemSetData[0].deviceId, DeviceIdLen);
+		memset(myfile, 0, sizeof(FatfsFileInfo_Def));
 
-		//保留已校准的led值
-		systemSetData[1].testLedLightIntensity = systemSetData[0].testLedLightIntensity;
-		
-		//保留已校准的校准参数
-		memcpy(systemSetData[1].adjustData, systemSetData[0].adjustData, AdjustDataStructSize * MaxAdjustItemNum);
-		
-		if(My_Pass != SaveSystemSetData(&systemSetData[1]))
+		myfile->res = f_open(&(myfile->file), DeviceAdjustFileName, FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
+			
+		if(FR_OK == myfile->res)
 		{
-			MyFree(systemSetData);
-			return My_Fail;
-		}
-		else
-		{
-			upDateSystemSetData(&systemSetData[1]);
-			MyFree(systemSetData);
+			myfile->size = f_size(&(myfile->file));
+			
+			f_lseek(&(myfile->file), myfile->size);
+			
+			myfile->res = f_write(&(myfile->file), deviceAdjust, DeviceAdjustStructSize, &(myfile->bw));
+				
+			if((FR_OK == myfile->res)&&(myfile->bw == DeviceAdjustStructSize))
+				statues = My_Pass;
+				
+			f_close(&(myfile->file));
 		}
 	}
-	else
-		return My_Fail;
 	
-	//删除设备信息，包含操作人
-	if(My_Fail == deleteDeviceFile())
-		return My_Fail;
+	MyFree(myfile);
 	
-	//删除wifi数据
-	if(My_Fail == ClearWifi())
-		return My_Fail;
-	
-	return My_Pass;
+	return statues;
 }
 
+MyState_TypeDef ReadDeviceAdjustFromFile(DeviceAdjust * deviceAdjust)
+{
+	FatfsFileInfo_Def * myfile = NULL;
+	MyState_TypeDef statues = My_Fail;
+	
+	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
 
+	if(myfile && deviceAdjust)
+	{
+		memset(myfile, 0, sizeof(FatfsFileInfo_Def));
+
+		myfile->res = f_open(&(myfile->file), DeviceAdjustFileName, FA_READ);
+		
+		if(FR_OK == myfile->res)
+		{
+			myfile->size = f_size(&(myfile->file));
+			
+			f_lseek(&(myfile->file), myfile->size - DeviceAdjustStructSize);
+
+			f_read(&(myfile->file), deviceAdjust, DeviceAdjustStructSize, &(myfile->br));
+			
+			statues = My_Pass;
+			
+			f_close(&(myfile->file));
+		}
+	}
+	MyFree(myfile);
+	
+	return statues;
+}
+
+MyState_TypeDef deleteDeviceAdjustFile(void)
+{
+	FRESULT res;
+	
+	res = f_unlink(DeviceAdjustFileName);
+	
+	if((FR_OK == res) || (FR_NO_FILE == res))
+		return My_Pass;
+	else
+		return My_Fail;
+}
 
 /****************************************end of file************************************************/

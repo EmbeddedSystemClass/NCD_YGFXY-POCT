@@ -1,13 +1,14 @@
 /****************************************file start****************************************************/
-#ifndef _USER_D_H
-#define	_USER_D_H
+#ifndef _DEVICEDAO_D_H
+#define	_DEVICEDAO_D_H
 
 #include	"Define.h"
 #include	"Operator.h"
+#include	"Device.h"
 
-MyState_TypeDef SaveUserData(Operator * user);
-MyState_TypeDef ReadUserData(Operator * user);
-MyState_TypeDef ClearUsers(void);
+MyState_TypeDef SaveDeviceToFile(Device * device);
+MyState_TypeDef ReadDeviceFromFile(Device * device);
+MyState_TypeDef deleteDeviceFile(void);
 
 #endif
 

@@ -48,7 +48,7 @@ void setDefaultSystemSetData(SystemSetData * systemSetData)
 	{
 		memset(systemSetData, 0, SystemSetDataStructSize);
 		
-		sprintf(systemSetData->device.deviceid, "NCD-Device\0");
+		sprintf(systemSetData->deviceId, "NCD-Device\0");
 		
 		systemSetData->isAutoPrint = true;
 		systemSetData->isMute = false;
@@ -56,6 +56,11 @@ void setDefaultSystemSetData(SystemSetData * systemSetData)
 		systemSetData->ledSleepTime = 60;
 
 		systemSetData->wireNetSet.ipMode = Dynamic_IP;
+		systemSetData->serverSet.serverIP.ip_1 = 116;
+		systemSetData->serverSet.serverIP.ip_2 = 62;
+		systemSetData->serverSet.serverIP.ip_3 = 108;
+		systemSetData->serverSet.serverIP.ip_4 = 201;
+		systemSetData->serverSet.serverPort = 8080;
 		
 		systemSetData->testLedLightIntensity = 200;
 		

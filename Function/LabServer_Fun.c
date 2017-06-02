@@ -83,14 +83,7 @@ static err_t ProcessCMD(unsigned char *buf, unsigned short len, struct netconn *
 		
 		if(!strncmp( (char *)buf, "Read Device Info", 16 ))
 		{
-			Device * deviceinfo = MyMalloc(sizeof(Device));
-			if(deviceinfo)
-			{
-				//读取设备信息
-				memcpy(deviceinfo, &(getGBSystemSetData()->device), DeviceStructSize);
-				sprintf(pxbuf1, "{\"deviceid\":\"%s\",\"devicestatus\":%d}", deviceinfo->deviceid, GetTestStatusFlorLab());
-			}
-			MyFree(deviceinfo);
+			sprintf(pxbuf1, "{\"deviceid\":\"%s\",\"devicestatus\":%d}", getGBSystemSetData()->deviceId, GetTestStatusFlorLab());
 		}
 		else if(!strncmp( (char *)buf, "Start Test", 10 ))
 		{

@@ -395,26 +395,13 @@ void ethernetif_input( void * pvParameters )
 */
 err_t ethernetif_init(struct netif *netif)
 {
-	Device * deviceinfo = NULL;
-	
 	LWIP_ASSERT("netif != NULL", (netif != NULL));
 	
 	
 #if LWIP_NETIF_HOSTNAME
   /* Initialize interface hostname */
 	
-	deviceinfo = MyMalloc(sizeof(Device));
-	if(deviceinfo)
-	{
-		//读取设备信息
-		memcpy(deviceinfo, &(getGBSystemSetData()->device), DeviceStructSize);
-		
-		memcpy(netif->hostname, deviceinfo->deviceid, strlen(deviceinfo->deviceid));
-		
-		MyFree(deviceinfo);
-	}
-	else
-		netif->hostname = "ncd-device";
+	memcpy(netif->hostname, getGBSystemSetData()->deviceId, DeviceIdLen);
   
 #endif /* LWIP_NETIF_HOSTNAME */
 

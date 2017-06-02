@@ -8,7 +8,7 @@
 #include	"MyTest_Data.h"
 #include	"CRC16.h"
 #include	"PlaySong_Task.h"
-#include	"UserDao.h"
+#include	"DeviceDao.h"
 #include	"UserMPage.h"
 
 #include 	"FreeRTOS.h"
@@ -84,8 +84,8 @@ static void activityStart(void)
 		S_UserPageBuffer->currenttestdata = GetCurrentTestItem();
 		S_UserPageBuffer->currenttestdata->statues = status_user;
 	
-		/*读取所有操作人*/
-		ReadUserData(S_UserPageBuffer->user);
+		/*读取设备信息*/
+		ReadDeviceFromFile(&(S_UserPageBuffer->device));
 	
 		S_UserPageBuffer->pageindex = 1;
 		S_UserPageBuffer->selectindex = 0;
@@ -142,7 +142,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		{			
 			if(S_UserPageBuffer->pageindex < (MaxOperatorSize / MaxPageShowOperatorSize))
 			{
-				S_UserPageBuffer->tempUser = &S_UserPageBuffer->user[(S_UserPageBuffer->pageindex)*MaxPageShowOperatorSize];
+				S_UserPageBuffer->tempUser = &S_UserPageBuffer->device.operators[(S_UserPageBuffer->pageindex)*MaxPageShowOperatorSize];
 			
 				if(S_UserPageBuffer->tempUser->crc == CalModbusCRC16Fun1(S_UserPageBuffer->tempUser, sizeof(Operator)-2))
 				{
@@ -231,7 +231,7 @@ static void activityResume(void)
 	if(S_UserPageBuffer)
 	{	
 		/*读取所有操作人*/
-		ReadUserData(S_UserPageBuffer->user);
+		ReadDeviceFromFile(&(S_UserPageBuffer->device));
 	
 		S_UserPageBuffer->pageindex = 1;
 		S_UserPageBuffer->selectindex = 0;
@@ -324,7 +324,7 @@ static void ShowList(void)
 	
 	i = (S_UserPageBuffer->pageindex-1)*MaxPageShowOperatorSize;
 	
-	S_UserPageBuffer->tempUser = &(S_UserPageBuffer->user[i]);
+	S_UserPageBuffer->tempUser = &(S_UserPageBuffer->device.operators[i]);
 	
 	/*显示列表数据*/
 	for(i=0; i<MaxPageShowOperatorSize; i++)
@@ -353,7 +353,7 @@ static void SelectUser(unsigned char index)
 	{
 		i = (S_UserPageBuffer->pageindex-1)*MaxPageShowOperatorSize + S_UserPageBuffer->selectindex-1;
 		
-		S_UserPageBuffer->tempUser2 = &(S_UserPageBuffer->user[i]);
+		S_UserPageBuffer->tempUser2 = &(S_UserPageBuffer->device.operators[i]);
 		
 		if(S_UserPageBuffer->tempUser2->crc == CalModbusCRC16Fun1(S_UserPageBuffer->tempUser2, sizeof(Operator)-2))
 		{

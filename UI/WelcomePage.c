@@ -12,7 +12,7 @@
 
 #include	"Test_Task.h"
 #include 	"netconf.h"
-#include	"NormalUpLoad_Task.h"
+#include	"HttpClient_Task.h"
 #include	"CodeScan_Task.h"
 #include	"Paidui_Task.h"
 
@@ -153,7 +153,7 @@ static void activityFresh(void)
 				StartEthernet();
 
 				/*上传任务*/
-				StartvNormalUpLoadTask();
+				StartvHttpClientTask();
 					
 				/*开启读二维码任务*/
 				StartCodeScanTask();

@@ -240,7 +240,7 @@ static void dspPageText(void)
 	writeDataToLcd(0x2941, S_AboutUsPageBuffer->buf, 6);
 
 	//ÏÔÊ¾¶þÎ¬Âë
-	sprintf(S_AboutUsPageBuffer->buf, "http://www.whnewcando.com/?%s\0", getGBSystemSetData()->device.deviceid);
+	sprintf(S_AboutUsPageBuffer->buf, "http://www.whnewcando.com/?%s\0", getGBSystemSetData()->deviceId);
 	writeDataToLcd(0x2950, S_AboutUsPageBuffer->buf, strlen(S_AboutUsPageBuffer->buf)+1);
 }
 

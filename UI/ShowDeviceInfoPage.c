@@ -5,6 +5,7 @@
 #include	"SetDeviceIDPage.h"
 #include	"SystemSetPage.h"
 #include	"SleepPage.h"
+#include	"DeviceDao.h"
 
 #include	"LCD_Driver.h"
 #include	"SystemSet_Dao.h"
@@ -75,6 +76,8 @@ static void activityStart(void)
 	{
 		memcpy(&(S_ShowDeviceInfoPageBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
 
+		ReadDeviceFromFile(&(S_ShowDeviceInfoPageBuffer->device));
+		
 		showDeviceInfo();
 	}
 	
@@ -179,6 +182,8 @@ static void activityResume(void)
 	if(S_ShowDeviceInfoPageBuffer)
 	{
 		memcpy(&(S_ShowDeviceInfoPageBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
+		
+		ReadDeviceFromFile(&(S_ShowDeviceInfoPageBuffer->device));
 
 		showDeviceInfo();
 	}
@@ -249,21 +254,21 @@ static void showDeviceInfo(void)
 	if(S_ShowDeviceInfoPageBuffer)
 	{
 		/*显示设备id*/
-		DisText(0x1a40, S_ShowDeviceInfoPageBuffer->systemSetData.device.deviceid, DeviceIdLen);
+		DisText(0x1a40, S_ShowDeviceInfoPageBuffer->systemSetData.deviceId, DeviceIdLen);
 		
 		/*显示设备名称*/
 		DisText(0x1a50, "荧光免疫定量分析仪\0", 19);
 			
 		/*显示使用单位*/
-		sprintf(S_ShowDeviceInfoPageBuffer->tempBuf, "%s\0", S_ShowDeviceInfoPageBuffer->systemSetData.device.addr);
+		sprintf(S_ShowDeviceInfoPageBuffer->tempBuf, "%s\0", S_ShowDeviceInfoPageBuffer->device.addr);
 		DisText(0x1a60, S_ShowDeviceInfoPageBuffer->tempBuf, strlen(S_ShowDeviceInfoPageBuffer->tempBuf)+1);
 
 		/*显示责任人*/
-		sprintf(S_ShowDeviceInfoPageBuffer->tempBuf, "%s\0", S_ShowDeviceInfoPageBuffer->systemSetData.device.operator.name);
+		sprintf(S_ShowDeviceInfoPageBuffer->tempBuf, "%s\0", S_ShowDeviceInfoPageBuffer->device.operator.name);
 		DisText(0x1a90, S_ShowDeviceInfoPageBuffer->tempBuf, strlen(S_ShowDeviceInfoPageBuffer->tempBuf)+1);
 		
 		/*显示责任人联系方式*/
-		sprintf(S_ShowDeviceInfoPageBuffer->tempBuf, "%s\0", S_ShowDeviceInfoPageBuffer->systemSetData.device.operator.phone);
+		sprintf(S_ShowDeviceInfoPageBuffer->tempBuf, "%s\0", S_ShowDeviceInfoPageBuffer->device.operator.phone);
 		DisText(0x1a80, S_ShowDeviceInfoPageBuffer->tempBuf, strlen(S_ShowDeviceInfoPageBuffer->tempBuf)+1);
 	}
 }

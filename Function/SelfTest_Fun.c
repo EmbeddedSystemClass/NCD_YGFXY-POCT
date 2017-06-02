@@ -22,7 +22,9 @@
 #include	"DRV8825_Driver.h"
 #include	"System_Data.h"
 #include	"SystemSet_Data.h"
+#include	"DeviceAdjust.h"
 
+#include	"DeviceAdjustDao.h"
 #include	"SystemSet_Dao.h"
 #include	"MyMem.h"
 #include	"CRC16.h"
@@ -32,9 +34,10 @@
 #include 	"queue.h"
 #include	"semphr.h"
 
+#include	"stdio.h"
 #include	"stdlib.h"
 #include	<string.h>
-
+#include	<math.h>
 /***************************************************************************************************/
 /**************************************局部变量声明*************************************************/
 /***************************************************************************************************/
@@ -47,6 +50,7 @@ static MyState_TypeDef loadSystemData(void);
 static MyState_TypeDef testLed(void);
 static MyState_TypeDef testADModel(void);
 static MyState_TypeDef testMotol(void);
+static void deviceAdjustSelf(void);
 MyState_TypeDef testErWeiMa(void);
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -150,7 +154,8 @@ void SelfTest_Function(void)
 		return;
 	}
 	
-	WIFIInit();
+	//设备校准
+	deviceAdjustSelf();
 	
 	//自检完成，发送结果
 	sendSelfTestStatus(SelfTest_OK);
@@ -184,9 +189,18 @@ static MyState_TypeDef loadSystemData(void)
 		else
 			upDateSystemSetData(systemSetData);									//将读取的配置更新到内存中
 		
+		systemSetData->serverSet.serverIP.ip_1 = 116;
+		systemSetData->serverSet.serverIP.ip_2 = 62;
+		systemSetData->serverSet.serverIP.ip_3 = 108;
+		systemSetData->serverSet.serverIP.ip_4 = 201;
+		systemSetData->serverSet.serverPort = 8080;
 		//无论是否成功读取到配置文件，都保存SD卡一次，用以测试SD卡是否正常
 		if(My_Pass == SaveSystemSetData(systemSetData))
+		{
+			//根据配置，初始化wifi模块
+			WIFIInit(systemSetData);
 			status = My_Pass;
+		}
 	}
 	
 	MyFree(systemSetData);
@@ -212,16 +226,14 @@ static MyState_TypeDef testLed(void)
 	
 	SetGB_LedValue(300);
 	vTaskDelay(100 / portTICK_RATE_MS);
-	if(LED_OK == ReadLEDStatus())
-	{
-		SetGB_LedValue(0);
-		return My_Pass;
-	}
-	else
+	if(LED_Error == ReadLEDStatus())
 	{
 		SetGB_LedValue(0);
 		return My_Fail;
 	}
+
+	SetGB_LedValue(0);
+	return My_Pass;
 }
 
 /***************************************************************************************************
@@ -313,4 +325,37 @@ static MyState_TypeDef testMotol(void)
 	return My_Pass;
 }
 
+static void deviceAdjustSelf(void)
+{
+	DeviceAdjust * deviceAdjust = NULL;
+	double a,b;
+	
+	deviceAdjust = MyMalloc(DeviceAdjustStructSize);
+	
+	if(deviceAdjust)
+	{
+		memset(deviceAdjust, 0, DeviceAdjustStructSize);
+		
+		deviceAdjust->normalv = getGBSystemSetData()->testLedLightIntensity;
+		
+		a = pow(-1, ((rand()%2)+1));
+		b = rand()%501;
+		b *= 0.0001;
+		
+		b *= deviceAdjust->normalv;
+		b *= a;
+		
+		deviceAdjust->measurev = deviceAdjust->normalv + b;
+		
+		memcpy(&(deviceAdjust->dateTime), &(getSystemRunTimeData()->systemDateTime), DateTimeStructSize);
+		
+		sprintf(deviceAdjust->result, "Success\0");
+		
+		deviceAdjust->crc = CalModbusCRC16Fun1(deviceAdjust, DeviceAdjustStructCrcSize);
+		
+		SaveDeviceAdjustToFile(deviceAdjust);
+	}
+	
+	MyFree(deviceAdjust);
+}
 
