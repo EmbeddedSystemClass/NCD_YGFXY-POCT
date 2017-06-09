@@ -8,7 +8,20 @@
 #include	"DateTime.h"
 #include	"Define.h"
 #include	"Temperature.h"
-#include	"TestSeries.h"
+
+#define	TestDataRecordPageShowNum		8							//一页8个数据
+
+#pragma pack(1)
+typedef struct TestSeries_tag {
+	unsigned short TestPoint[MaxPointLen];
+	unsigned short C_Point[2];
+	unsigned short T_Point[2];
+	unsigned short B_Point[2];
+	float BasicBili;
+	float BasicResult;
+	float AdjustResult;
+} TestSeries;
+#pragma pack()
 
 #pragma pack(1)
 typedef struct TestData_tag {
@@ -25,6 +38,25 @@ typedef struct TestData_tag {
 }TestData;
 #pragma pack()
 
+
+#pragma pack(1)
+typedef struct
+{
+	PageRequest pageRequest;
+	DeviceRecordHeader deviceRecordHeader;
+	TestData testData[TestDataRecordPageShowNum];
+	unsigned char readTotalNum;							//读取到的有效数据数目
+}TestDataRecordReadPackage;
+#pragma pack()
+
+#define	TestSeriesStructSize	sizeof(TestSeries)
+
+#define	TestDataStructSize		sizeof(TestData)
+#define	TestDataStructCrcSize	TestDataStructSize - 2
+
+#define	TestDataRecordReadPackageStructSize		sizeof(TestDataRecordReadPackage)
+#define	TestDataRecordReadPackageStructCrcSize	TestDataRecordReadPackageStructSize - 2
+	
 #endif
 
 /****************************************end of file************************************************/

@@ -37,10 +37,16 @@
 #define	HttpResponeOK				"HTTP/1.1 200 OK\0"
 #define	ReadTimeUrl					"DeviceReadTime\0"
 #define	QueryDeviceByDeviceIdUrl	"DeviceQueryDeviceByDeviceId\0"
+#define	UpLoadDeviceAdjustUrl		"UpLoadDeviceAdjust\0"
+#define	UpLoadDeviceErrorUrl		"UpLoadDeviceError\0"
+#define	UpLoadYGFXYDataUrl			"upLoadYGFXY_Data\0"
 
 
 /*SD卡文件名*/
+#define	TestDataFileName			"0:/TD.ncd\0"
 #define	DeviceAdjustFileName		"0:/Dadj.ncd\0"
+#define	DeviceErrorFileName			"0:/Derr.ncd\0"
+
 /**********************************************************************************************************/
 /******************************************操作结果变量*************************************************/
 /**********************************************************************************************************/
@@ -81,6 +87,7 @@ typedef struct
 	FSIZE_t size;
 }FatfsFileInfo_Def; 
 
+#define	MyFileStructSize sizeof(FatfsFileInfo_Def)
 /**********************************************************************************************************/
 /**********************************************************************************************************/
 
@@ -206,8 +213,36 @@ typedef enum
 }SelfCheckStatus;
 /**********************************************************************************************************/
 /**********************************************************************************************************/
+typedef enum
+{
+	DESC = 0,												//正序
+	ASC = 1													//逆序
+}OrderByEnum;
 
+//读取请求信息
+#pragma pack(1)
+typedef struct PageRequest_tag {
+	unsigned int startElementIndex;											//起始读取索引，0为第一个
+	unsigned int pageSize;													//每页的数目
+	OrderByEnum orderType;													//排序方式
+	unsigned short crc;
+}PageRequest;
+#pragma pack()
 
+#define	PageRequestStructSize		sizeof(PageRequest)
+#define	PageRequestStructCrcSize	PageRequestStructSize - 2
+
+#pragma pack(1)
+typedef struct
+{
+	unsigned int itemSize;
+	unsigned int uploadIndex;
+	unsigned short crc;
+}DeviceRecordHeader;
+#pragma pack()
+
+#define	DeviceRecordHeaderStructSize		sizeof(DeviceRecordHeader)								//最多保存的用户数目
+#define	DeviceRecordHeaderStructCrcSize		DeviceRecordHeaderStructSize - 2						//最多保存的用户数目
 /**********************************************************************************************************/
 /******************************************网络相关定义****************************************************/
 /**********************************************************************************************************/

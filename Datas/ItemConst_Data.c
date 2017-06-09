@@ -21,6 +21,7 @@ const ItemConstData GB_ItemConstData[ItemConstDataNum]=
 {
 	{
 		.itemName = "NT-proBNP\0",
+		.itemCode = "NT-proBNP\0",
 		.icoIndex = 0,
 		.pointNum = 0,
 		.lowstResult = 20,
@@ -30,6 +31,7 @@ const ItemConstData GB_ItemConstData[ItemConstDataNum]=
 	},
 	{
 		.itemName = "CK-MB\0",
+		.itemCode = "CK-MB\0",
 		.icoIndex = 1,
 		.pointNum = 2,
 		.lowstResult = 0.5,
@@ -39,6 +41,7 @@ const ItemConstData GB_ItemConstData[ItemConstDataNum]=
 	},
 	{
 		.itemName = "cTnI\0",
+		.itemCode = "cTnI\0",
 		.icoIndex = 2,
 		.pointNum = 2,
 		.lowstResult = 0.1,
@@ -48,6 +51,7 @@ const ItemConstData GB_ItemConstData[ItemConstDataNum]=
 	},
 	{
 		.itemName = "Myo\0",
+		.itemCode = "Myo\0",
 		.icoIndex = 3,
 		.pointNum = 2,
 		.lowstResult = 2.5,

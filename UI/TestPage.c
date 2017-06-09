@@ -127,23 +127,29 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		/*退出*/
 		if(0x1801 == S_TestPageBuffer->lcdinput[0])
 		{
-			if(S_TestPageBuffer->currenttestdata->testData.testResultDesc != NoResult)
+			if(S_TestPageBuffer->currenttestdata)
 			{
-				//删除当前测试
-				if(S_TestPageBuffer->currenttestdata)
+				if(S_TestPageBuffer->currenttestdata->testData.testResultDesc != NoResult)
 				{
 					DeleteCurrentTest();
 					S_TestPageBuffer->currenttestdata = NULL;
+										
+					backToActivity(lunchActivityName);
+					
+					if(IsPaiDuiTestting())
+						startActivity(createPaiDuiActivity, NULL);					
 				}
-				
+				//正在测试不允许退出
+				else
+					SendKeyCode(4);
+			}
+			else
+			{
 				backToActivity(lunchActivityName);
 				
 				if(IsPaiDuiTestting())
-					startActivity(createPaiDuiActivity, NULL);					
+					startActivity(createPaiDuiActivity, NULL);
 			}
-			//正在测试不允许退出
-			else
-				SendKeyCode(4);
 		}
 		/*打印数据*/
 		else if(0x1800 == S_TestPageBuffer->lcdinput[0])
@@ -164,28 +170,25 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(S_TestPageBuffer)
+	if(S_TestPageBuffer->currenttestdata && (S_TestPageBuffer->currenttestdata->testData.testResultDesc == NoResult))
+		RefreshCurve();
+	else
 	{
-		if(S_TestPageBuffer->currenttestdata->testData.testResultDesc == NoResult)
-			RefreshCurve();
-		else
+		//如果打印完毕，且卡拔出，则退出
+		if((S_TestPageBuffer->isPrintfData == 0) &&(MaxLocation == getSystemRunTimeData()->motorData.location))
 		{
-			//如果打印完毕，且卡拔出，则退出
-			if((S_TestPageBuffer->isPrintfData == 0) &&(MaxLocation == getSystemRunTimeData()->motorData.location))
-			{
 				//删除当前测试
-				if(S_TestPageBuffer->currenttestdata)
-				{
-					DeleteCurrentTest();
-					S_TestPageBuffer->currenttestdata = NULL;
-				}
-				else if(CardPinIn == NoCard)
-				{
-					backToActivity(lunchActivityName);
+			if(S_TestPageBuffer->currenttestdata)
+			{
+				DeleteCurrentTest();
+				S_TestPageBuffer->currenttestdata = NULL;
+			}
+			else if(CardPinIn == NoCard)
+			{
+				backToActivity(lunchActivityName);
 				
-					if(IsPaiDuiTestting())
-						startActivity(createPaiDuiActivity, NULL);
-				}
+				if(IsPaiDuiTestting())
+					startActivity(createPaiDuiActivity, NULL);
 			}
 		}
 	}
@@ -343,14 +346,8 @@ static void RefreshCurve(void)
 		
 		RefreshPageText();
 		
-		memcpy(&(S_TestPageBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
-		//保存数据
-		WriteTestData(&(S_TestPageBuffer->currenttestdata->testData), S_TestPageBuffer->systemSetData.testDataNum);
-		//测试数目+1
-		S_TestPageBuffer->systemSetData.testDataNum += 1;
-		//保存测试数目
-		SaveSystemSetData(&(S_TestPageBuffer->systemSetData));
-		upDateSystemSetData(&(S_TestPageBuffer->systemSetData));
+		//保存数据,并且更新数据数目头信息
+		writeTestDataToFile(&(S_TestPageBuffer->currenttestdata->testData));
 		
 		if(S_TestPageBuffer->currenttestdata->testData.testResultDesc == ResultIsOK)
 		{

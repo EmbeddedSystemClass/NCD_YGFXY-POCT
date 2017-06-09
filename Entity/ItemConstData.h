@@ -12,6 +12,7 @@
 typedef struct ItemConstData_Tag
 {
 	char itemName[ItemNameLen];									//项目名称
+	char itemCode[ItemNameLen];									//项目代号
 	unsigned short icoIndex;									//排队界面显示图标的索引
 	unsigned char pointNum;										//小数点个数
 	float lowstResult;											//最低检测线

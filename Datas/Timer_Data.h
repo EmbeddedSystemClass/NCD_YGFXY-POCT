@@ -4,6 +4,7 @@
 #include	"Define.h"
 
 void ResetGBClockTime(void);
+unsigned int getGBClockTime(void);
 void timer_set(Timer *t, unsigned int interval);
 void timer_reset(Timer *t);
 void timer_stop(Timer *t);

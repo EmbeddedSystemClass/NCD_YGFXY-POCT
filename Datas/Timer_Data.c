@@ -40,6 +40,11 @@ void ResetGBClockTime(void)
 	GB_ClockTime = 0;
 }
 
+unsigned int getGBClockTime(void)
+{
+	return GB_ClockTime;
+}
+
 /***************************************************************************************************
 *FunctionName：timer_set
 *Description：初始化一个定时器

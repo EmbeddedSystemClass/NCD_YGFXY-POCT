@@ -7,6 +7,7 @@
 #include	"MyMem.h"
 
 #include	"SystemSetPage.h"
+#include	"ServerSetPage.h"
 #include	"NetSetPage.h"
 #include	"WifiSetPage.h"
 #include	"NetInfoPage.h"
@@ -113,6 +114,11 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		else if(S_NetPrePageBuffer->lcdinput[0] == 0x1E02)
 		{
 			startActivity(createWifiSetActivity, NULL);
+		}
+		//服务器设置
+		else if(S_NetPrePageBuffer->lcdinput[0] == 0x1FA0)
+		{
+			startActivity(createServerSetActivity, NULL);
 		}
 		//查看网络信息
 		else if(S_NetPrePageBuffer->lcdinput[0] == 0x1E03)

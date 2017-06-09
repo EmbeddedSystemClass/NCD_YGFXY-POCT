@@ -8,7 +8,7 @@
 /***************************************************************************************************/
 /******************************************Header List********************************************/
 /***************************************************************************************************/
-#include	"DeviceAdjustDao.h"
+#include	"DeviceErrorDao.h"
 
 #include	"CRC16.h"
 #include	"MyMem.h"
@@ -33,8 +33,7 @@
 /****************************************File Start*************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
-
-MyState_TypeDef writeDeviceAdjustToFile(DeviceAdjust * deviceAdjust)
+MyState_TypeDef writeDeviceErrorToFile(DeviceError * deviceError)
 {
 	FatfsFileInfo_Def * myfile = NULL;
 	DeviceRecordHeader * deviceRecordHeader = NULL;
@@ -43,12 +42,12 @@ MyState_TypeDef writeDeviceAdjustToFile(DeviceAdjust * deviceAdjust)
 	myfile = MyMalloc(MyFileStructSize);
 	deviceRecordHeader = MyMalloc(DeviceRecordHeaderStructSize);
 	
-	if(myfile && deviceAdjust && deviceRecordHeader)
+	if(myfile && deviceError && deviceRecordHeader)
 	{
 		memset(myfile, 0, MyFileStructSize);
 		memset(deviceRecordHeader, 0, DeviceRecordHeaderStructSize);
 		
-		myfile->res = f_open(&(myfile->file), DeviceAdjustFileName, FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
+		myfile->res = f_open(&(myfile->file), DeviceErrorFileName, FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
 			
 		if(FR_OK == myfile->res)
 		{
@@ -74,10 +73,10 @@ MyState_TypeDef writeDeviceAdjustToFile(DeviceAdjust * deviceAdjust)
 			}
 			
 			//写数据
-			f_lseek(&(myfile->file), deviceRecordHeader->itemSize * DeviceAdjustStructSize + DeviceRecordHeaderStructSize);
-			myfile->res = f_write(&(myfile->file), deviceAdjust, DeviceAdjustStructSize, &(myfile->bw));
+			f_lseek(&(myfile->file), deviceRecordHeader->itemSize * DeviceErrorStructSize + DeviceRecordHeaderStructSize);
+			myfile->res = f_write(&(myfile->file), deviceError, DeviceErrorStructSize, &(myfile->bw));
 
-			if((FR_OK != myfile->res) || (myfile->bw != DeviceAdjustStructSize))
+			if((FR_OK != myfile->res) || (myfile->bw != DeviceErrorStructSize))
 				goto Finally;
 			
 			//更新数据头
@@ -100,22 +99,22 @@ MyState_TypeDef writeDeviceAdjustToFile(DeviceAdjust * deviceAdjust)
 	return statues;
 }
 
-MyState_TypeDef readDeviceAdjustFromFile(DeviceAdjustReadPackge * deviceAdjustReadPackge)
+MyState_TypeDef readDeviceErrorFromFile(DeviceErrorReadPackge * deviceErrorReadPackge)
 {
 	FatfsFileInfo_Def * myfile = NULL;
 	MyState_TypeDef statues = My_Fail;
-	unsigned char i=0;
+	unsigned char  i = 0;
 	
 	myfile = MyMalloc(MyFileStructSize);
 
-	if(myfile && deviceAdjustReadPackge)
+	if(myfile && deviceErrorReadPackge)
 	{
 		memset(myfile, 0, MyFileStructSize);
-		memset(&(deviceAdjustReadPackge->deviceRecordHeader), 0, DeviceRecordHeaderStructSize);
-		memset(&(deviceAdjustReadPackge->deviceAdjust), 0, DeviceAdjustStructSize * DeviceAdjustRecordPageShowNum);
-		deviceAdjustReadPackge->readTotalNum = 0;
+		memset(&(deviceErrorReadPackge->deviceRecordHeader), 0, DeviceRecordHeaderStructSize);
+		memset(&(deviceErrorReadPackge->deviceError), 0, DeviceErrorStructSize * DeviceErrorRecordPageShowNum);
+		deviceErrorReadPackge->readTotalNum = 0;
 		
-		myfile->res = f_open(&(myfile->file), DeviceAdjustFileName, FA_READ);
+		myfile->res = f_open(&(myfile->file), DeviceErrorFileName, FA_READ);
 		
 		if(FR_OK == myfile->res)
 		{
@@ -124,40 +123,40 @@ MyState_TypeDef readDeviceAdjustFromFile(DeviceAdjustReadPackge * deviceAdjustRe
 			f_lseek(&(myfile->file), 0);
 			
 			//读取数据头
-			myfile->res = f_read(&(myfile->file), &(deviceAdjustReadPackge->deviceRecordHeader), DeviceRecordHeaderStructSize, &(myfile->br));
-			if(deviceAdjustReadPackge->deviceRecordHeader.crc != CalModbusCRC16Fun1(&(deviceAdjustReadPackge->deviceRecordHeader), DeviceRecordHeaderStructCrcSize))
+			myfile->res = f_read(&(myfile->file), &(deviceErrorReadPackge->deviceRecordHeader), DeviceRecordHeaderStructSize, &(myfile->br));
+			if(deviceErrorReadPackge->deviceRecordHeader.crc != CalModbusCRC16Fun1(&(deviceErrorReadPackge->deviceRecordHeader), DeviceRecordHeaderStructCrcSize))
 				goto Finally;
 			
 			//如果pageRequest的crc错误，表示是按照上传索引读取数据进行上传
-			if(deviceAdjustReadPackge->pageRequest.crc != CalModbusCRC16Fun1(&(deviceAdjustReadPackge->pageRequest), PageRequestStructCrcSize))
+			if(deviceErrorReadPackge->pageRequest.crc != CalModbusCRC16Fun1(&(deviceErrorReadPackge->pageRequest), PageRequestStructCrcSize))
 			{
-				if(deviceAdjustReadPackge->deviceRecordHeader.uploadIndex < deviceAdjustReadPackge->deviceRecordHeader.itemSize)
+				if(deviceErrorReadPackge->deviceRecordHeader.uploadIndex < deviceErrorReadPackge->deviceRecordHeader.itemSize)
 				{
-					f_lseek(&(myfile->file), deviceAdjustReadPackge->deviceRecordHeader.uploadIndex * DeviceAdjustStructSize + DeviceRecordHeaderStructSize);
+					f_lseek(&(myfile->file), deviceErrorReadPackge->deviceRecordHeader.uploadIndex * DeviceErrorStructSize + DeviceRecordHeaderStructSize);
 				
-					if((deviceAdjustReadPackge->deviceRecordHeader.itemSize - deviceAdjustReadPackge->deviceRecordHeader.uploadIndex) >= DeviceAdjustRecordPageShowNum)
-						f_read(&(myfile->file), deviceAdjustReadPackge->deviceAdjust, DeviceAdjustRecordPageShowNum * DeviceAdjustStructSize, &(myfile->br));
+					if((deviceErrorReadPackge->deviceRecordHeader.itemSize - deviceErrorReadPackge->deviceRecordHeader.uploadIndex) >= DeviceErrorRecordPageShowNum)
+						f_read(&(myfile->file), deviceErrorReadPackge->deviceError, DeviceErrorRecordPageShowNum * DeviceErrorStructSize, &(myfile->br));
 					else
-						f_read(&(myfile->file), deviceAdjustReadPackge->deviceAdjust, (deviceAdjustReadPackge->deviceRecordHeader.itemSize - deviceAdjustReadPackge->deviceRecordHeader.uploadIndex) * DeviceAdjustStructSize, &(myfile->br));
+						f_read(&(myfile->file), deviceErrorReadPackge->deviceError, (deviceErrorReadPackge->deviceRecordHeader.itemSize - deviceErrorReadPackge->deviceRecordHeader.uploadIndex) * DeviceErrorStructSize, &(myfile->br));
 				}
 			}
 			//如果pageRequest的crc正确，表示是按照pageRequest的请求内容进行读取数据
-			else if(deviceAdjustReadPackge->pageRequest.startElementIndex < deviceAdjustReadPackge->deviceRecordHeader.itemSize)
+			else if(deviceErrorReadPackge->pageRequest.startElementIndex < deviceErrorReadPackge->deviceRecordHeader.itemSize)
 			{
-				if(deviceAdjustReadPackge->pageRequest.pageSize > (deviceAdjustReadPackge->deviceRecordHeader.itemSize - deviceAdjustReadPackge->pageRequest.startElementIndex))
-					deviceAdjustReadPackge->pageRequest.pageSize = (deviceAdjustReadPackge->deviceRecordHeader.itemSize - deviceAdjustReadPackge->pageRequest.startElementIndex);
+				if(deviceErrorReadPackge->pageRequest.pageSize > (deviceErrorReadPackge->deviceRecordHeader.itemSize - deviceErrorReadPackge->pageRequest.startElementIndex))
+					deviceErrorReadPackge->pageRequest.pageSize = (deviceErrorReadPackge->deviceRecordHeader.itemSize - deviceErrorReadPackge->pageRequest.startElementIndex);
 					
-				if(deviceAdjustReadPackge->pageRequest.orderType == DESC)
-					myfile->res = f_lseek(&(myfile->file), (deviceAdjustReadPackge->pageRequest.startElementIndex) * DeviceAdjustStructSize + DeviceRecordHeaderStructSize);
+				if(deviceErrorReadPackge->pageRequest.orderType == DESC)
+					myfile->res = f_lseek(&(myfile->file), (deviceErrorReadPackge->pageRequest.startElementIndex) * DeviceErrorStructSize + DeviceRecordHeaderStructSize);
 				else
-					myfile->res = f_lseek(&(myfile->file), (deviceAdjustReadPackge->deviceRecordHeader.itemSize - (deviceAdjustReadPackge->pageRequest.pageSize + deviceAdjustReadPackge->pageRequest.startElementIndex)) * DeviceAdjustStructSize + DeviceRecordHeaderStructSize);
+					myfile->res = f_lseek(&(myfile->file), (deviceErrorReadPackge->deviceRecordHeader.itemSize - (deviceErrorReadPackge->pageRequest.pageSize + deviceErrorReadPackge->pageRequest.startElementIndex)) * DeviceErrorStructSize + DeviceRecordHeaderStructSize);
 					
-				myfile->res = f_read(&(myfile->file), deviceAdjustReadPackge->deviceAdjust, deviceAdjustReadPackge->pageRequest.pageSize * DeviceAdjustStructSize, &(myfile->br));	
+				myfile->res = f_read(&(myfile->file), deviceErrorReadPackge->deviceError, deviceErrorReadPackge->pageRequest.pageSize * DeviceErrorStructSize, &(myfile->br));	
 				
-				for(i=0; i<DeviceAdjustRecordPageShowNum; i++)
+				for(i=0; i<DeviceErrorRecordPageShowNum; i++)
 				{
-					if(deviceAdjustReadPackge->deviceAdjust[i].crc == CalModbusCRC16Fun1(&deviceAdjustReadPackge->deviceAdjust[i], DeviceAdjustStructCrcSize))
-						deviceAdjustReadPackge->readTotalNum++;
+					if(deviceErrorReadPackge->deviceError[i].crc == CalModbusCRC16Fun1(&deviceErrorReadPackge->deviceError[i], DeviceErrorStructCrcSize))
+						deviceErrorReadPackge->readTotalNum++;
 				}
 			}
 			
@@ -172,7 +171,7 @@ MyState_TypeDef readDeviceAdjustFromFile(DeviceAdjustReadPackge * deviceAdjustRe
 	return statues;
 }
 
-MyState_TypeDef plusDeviceAdjustHeaderUpLoadIndexToFile(unsigned int index)
+MyState_TypeDef plusDeviceErrorHeaderUpLoadIndexToFile(unsigned int index)
 {
 	FatfsFileInfo_Def * myfile = NULL;
 	DeviceRecordHeader * deviceRecordHeader = NULL;
@@ -185,7 +184,7 @@ MyState_TypeDef plusDeviceAdjustHeaderUpLoadIndexToFile(unsigned int index)
 	{
 		memset(myfile, 0, MyFileStructSize);
 
-		myfile->res = f_open(&(myfile->file), DeviceAdjustFileName, FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
+		myfile->res = f_open(&(myfile->file), DeviceErrorFileName, FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
 		
 		if(FR_OK == myfile->res)
 		{
@@ -213,11 +212,11 @@ MyState_TypeDef plusDeviceAdjustHeaderUpLoadIndexToFile(unsigned int index)
 	return statues;
 }
 
-MyState_TypeDef deleteDeviceAdjustFile(void)
+MyState_TypeDef deleteDeviceErrorFile(void)
 {
 	FRESULT res;
 	
-	res = f_unlink(DeviceAdjustFileName);
+	res = f_unlink(DeviceErrorFileName);
 	
 	if((FR_OK == res) || (FR_NO_FILE == res))
 		return My_Pass;

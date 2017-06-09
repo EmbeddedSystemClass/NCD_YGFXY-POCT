@@ -13,7 +13,8 @@ typedef struct HttpClientBuffer_Tag
 {
 	SystemSetData systemSetData;
 	HttpPostBuffer httpPostBuffer;
-	char tempBuffer[1024];
+	char tempBuffer[4096];
+	char tempbuf2[25];
 	DateTime dateTime;
 }HttpClientBuffer;
 

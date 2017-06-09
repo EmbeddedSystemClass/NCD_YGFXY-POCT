@@ -23,7 +23,9 @@
 #include	"System_Data.h"
 #include	"SystemSet_Data.h"
 #include	"DeviceAdjust.h"
+#include	"DeviceError.h"
 
+#include	"DeviceErrorDao.h"
 #include	"DeviceAdjustDao.h"
 #include	"SystemSet_Dao.h"
 #include	"MyMem.h"
@@ -51,6 +53,7 @@ static MyState_TypeDef testLed(void);
 static MyState_TypeDef testADModel(void);
 static MyState_TypeDef testMotol(void);
 static void deviceAdjustSelf(void);
+static void deviceErrorTest(void);
 MyState_TypeDef testErWeiMa(void);
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -157,6 +160,9 @@ void SelfTest_Function(void)
 	//设备校准
 	deviceAdjustSelf();
 	
+	//模拟错误
+	deviceErrorTest();
+	
 	//自检完成，发送结果
 	sendSelfTestStatus(SelfTest_OK);
 }
@@ -188,12 +194,7 @@ static MyState_TypeDef loadSystemData(void)
 			setDefaultSystemSetData(systemSetData);								//恢复出厂设置
 		else
 			upDateSystemSetData(systemSetData);									//将读取的配置更新到内存中
-		
-		systemSetData->serverSet.serverIP.ip_1 = 116;
-		systemSetData->serverSet.serverIP.ip_2 = 62;
-		systemSetData->serverSet.serverIP.ip_3 = 108;
-		systemSetData->serverSet.serverIP.ip_4 = 201;
-		systemSetData->serverSet.serverPort = 8080;
+
 		//无论是否成功读取到配置文件，都保存SD卡一次，用以测试SD卡是否正常
 		if(My_Pass == SaveSystemSetData(systemSetData))
 		{
@@ -337,7 +338,9 @@ static void deviceAdjustSelf(void)
 		memset(deviceAdjust, 0, DeviceAdjustStructSize);
 		
 		deviceAdjust->normalv = getGBSystemSetData()->testLedLightIntensity;
+		memcpy(&(deviceAdjust->dateTime), &(getSystemRunTimeData()->systemDateTime), DateTimeStructSize);
 		
+		srand(deviceAdjust->dateTime.sec + deviceAdjust->dateTime.min*60);
 		a = pow(-1, ((rand()%2)+1));
 		b = rand()%501;
 		b *= 0.0001;
@@ -347,15 +350,39 @@ static void deviceAdjustSelf(void)
 		
 		deviceAdjust->measurev = deviceAdjust->normalv + b;
 		
-		memcpy(&(deviceAdjust->dateTime), &(getSystemRunTimeData()->systemDateTime), DateTimeStructSize);
-		
-		sprintf(deviceAdjust->result, "Success\0");
+		snprintf(deviceAdjust->result, 20, "Success");
 		
 		deviceAdjust->crc = CalModbusCRC16Fun1(deviceAdjust, DeviceAdjustStructCrcSize);
 		
-		SaveDeviceAdjustToFile(deviceAdjust);
+		writeDeviceAdjustToFile(deviceAdjust);
 	}
 	
 	MyFree(deviceAdjust);
 }
 
+
+static void deviceErrorTest(void)
+{
+	DeviceError * deviceError = NULL;
+	double a,b;
+	
+	deviceError = MyMalloc(DeviceErrorStructSize);
+	
+	if(deviceError)
+	{
+		memset(deviceError, 0, DeviceErrorStructSize);
+		
+		memcpy(&(deviceError->dateTime), &(getSystemRunTimeData()->systemDateTime), DateTimeStructSize);
+		
+		srand(deviceError->dateTime.sec + deviceError->dateTime.min*60);
+		deviceError->errorCode = rand()%10000;
+
+		snprintf(deviceError->result, 30, "random error test!");
+		
+		deviceError->crc = CalModbusCRC16Fun1(deviceError, DeviceErrorStructCrcSize);
+		
+		writeDeviceErrorToFile(deviceError);
+	}
+	
+	MyFree(deviceError);
+}

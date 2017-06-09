@@ -114,9 +114,14 @@ static MyState_TypeDef ComWithWIFI(char * cmd, const char *strcmp, char *buf, un
 
 void WIFIInit(SystemSetData * systemSetData)
 {
+	unsigned char i=0;
 	vSemaphoreCreateBinary(xWifiMutex);
 	
-	SetWifiWorkInAT(AT_Mode);
+	for(i=0; i<5; i++)
+	{
+		if(My_Pass == SetWifiWorkInAT(AT_Mode))
+			break;
+	}
 
 	SetWifiServerInfo(systemSetData);
 
@@ -150,6 +155,7 @@ MyState_TypeDef SetWifiWorkInAT(WIFI_WorkMode_DefType mode)
 		{
 			if(My_Pass == ComWithWIFI("+++", "a", txbuf, 50, 500 * portTICK_RATE_MS))
 			{
+				vTaskDelay(100 / portTICK_RATE_MS);
 				if(My_Pass == ComWithWIFI("a", "+ok", txbuf, 50, 500 * portTICK_RATE_MS))
 					statues = My_Pass;
 			}

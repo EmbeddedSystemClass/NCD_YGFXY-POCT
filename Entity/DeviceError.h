@@ -1,23 +1,22 @@
 /****************************************file start****************************************************/
-#ifndef _DEVICEADJUST_E_H
-#define	_DEVICEADJUST_E_H
+#ifndef _DEVICEERROR_E_H
+#define	_DEVICEERROR_E_H
 
+#include	"Define.h"
 #include	"DateTime.h"
 #include	"Operator.h"
-#include	"Define.h"
 
-#define		DeviceAdjustRecordPageShowNum	8
+#define		DeviceErrorRecordPageShowNum	8
 
 #pragma pack(1)
 typedef struct
 {
-	float normalv;
-	float measurev;
+	unsigned short errorCode;
 	DateTime dateTime;
 	Operator operator;
-	char result[20];
+	char result[30];
 	unsigned short crc;
-}DeviceAdjust;
+}DeviceError;
 #pragma pack()
 
 #pragma pack(1)
@@ -25,17 +24,17 @@ typedef struct
 {
 	PageRequest pageRequest;
 	DeviceRecordHeader deviceRecordHeader;
-	DeviceAdjust deviceAdjust[DeviceAdjustRecordPageShowNum];
+	DeviceError deviceError[DeviceErrorRecordPageShowNum];
 	unsigned char readTotalNum;							//读取到的有效数据数目
-}DeviceAdjustReadPackge;
+}DeviceErrorReadPackge;
 #pragma pack()
 
-#define	DeviceAdjustStructSize		sizeof(DeviceAdjust)							//最多保存的用户数目
-#define	DeviceAdjustStructCrcSize	DeviceAdjustStructSize - 2						//最多保存的用户数目
+#define	DeviceErrorStructSize		sizeof(DeviceError)							//最多保存的用户数目
+#define	DeviceErrorStructCrcSize	DeviceErrorStructSize - 2						//最多保存的用户数目
 
 
 
-#define	DeviceAdjustReadPackgeStructSize		sizeof(DeviceAdjustReadPackge)								//最多保存的用户数目
+#define	DeviceErrorReadPackgeStructSize		sizeof(DeviceErrorReadPackge)								//最多保存的用户数目
 
 #endif
 

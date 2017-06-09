@@ -12,8 +12,7 @@ typedef struct Record_tag {
 	unsigned int pageindex;							//页面索引
 	unsigned int maxpagenum;
 	
-	PageRequest pageRequest;
-	Page page;
+	TestDataRecordReadPackage testDataRecordReadPackage;		//读取数据
 	
 	char buf[300];										//临时缓冲区
 	char tempBuf[100];										//临时缓冲区

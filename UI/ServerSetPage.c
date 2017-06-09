@@ -1,13 +1,12 @@
 /******************************************************************************************/
 /*****************************************头文件*******************************************/
 
-#include	"WifiSetPage.h"
-
+#include	"ServerSetPage.h"
 #include	"LCD_Driver.h"
-#include	"MyMem.h"
-#include	"WifiFunction.h"
+#include	"SystemSet_Dao.h"
 #include	"NetPreSetPage.h"
-#include	"WifiDao.h"
+#include	"MyMem.h"
+#include	"CRC16.h"
 #include	"SleepPage.h"
 
 #include 	"FreeRTOS.h"
@@ -16,17 +15,13 @@
 
 #include	<string.h>
 #include	"stdio.h"
+#include 	"stdlib.h"
 
 /******************************************************************************************/
 /*****************************************局部变量声明*************************************/
-static WifiPageBuffer * S_WifiPageBuffer = NULL;
+static ServerSetPageBuffer * S_ServerSetPageBuffer = NULL;
 /******************************************************************************************/
 /*****************************************局部函数声明*************************************/
-static void RefreshWifi(void);
-static void DisListText(void);
-static void CheckIsNeedKey(void);
-static MyState_TypeDef connectWifiFun(void);
-
 static void activityStart(void);
 static void activityInput(unsigned char *pbuf , unsigned short len);
 static void activityFresh(void);
@@ -35,6 +30,9 @@ static void activityResume(void);
 static void activityDestroy(void);
 static MyState_TypeDef activityBufferMalloc(void);
 static void activityBufferFree(void);
+
+static void SetServerIP(unsigned char *buf, unsigned char len);
+static void SetServerPort(unsigned char *buf, unsigned char len);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -50,14 +48,14 @@ static void activityBufferFree(void);
 *Author: xsx
 *Date: 2016年12月21日09:00:09
 ***************************************************************************************************/
-MyState_TypeDef createWifiSetActivity(Activity * thizActivity, Intent * pram)
+MyState_TypeDef createServerSetActivity(Activity * thizActivity, Intent * pram)
 {
 	if(NULL == thizActivity)
 		return My_Fail;
 	
 	if(My_Pass == activityBufferMalloc())
 	{
-		InitActivity(thizActivity, "WifiSetActivity\0", activityStart, activityInput, activityFresh, activityHide, activityResume, activityDestroy);
+		InitActivity(thizActivity, "ServerSetActivity\0", activityStart, activityInput, activityFresh, activityHide, activityResume, activityDestroy);
 		
 		return My_Pass;
 	}
@@ -76,14 +74,21 @@ MyState_TypeDef createWifiSetActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_WifiPageBuffer)
+	if(S_ServerSetPageBuffer)
 	{
-		SelectPage(112);
+		memcpy(&(S_ServerSetPageBuffer->serverSet), &(getGBSystemSetData()->serverSet), ServerSetStructSize);
 		
-		RefreshWifi();
+		/*更新ip*/
+		snprintf((S_ServerSetPageBuffer->buf), 16, "%d.%d.%d.%d", S_ServerSetPageBuffer->serverSet.serverIP.ip_1, S_ServerSetPageBuffer->serverSet.serverIP.ip_2, 
+			S_ServerSetPageBuffer->serverSet.serverIP.ip_3, S_ServerSetPageBuffer->serverSet.serverIP.ip_4);
+		DisText(0x1fb0, S_ServerSetPageBuffer->buf, strlen(S_ServerSetPageBuffer->buf)+1);
 		
-		DisListText();
+		/*更新端口号*/
+		snprintf((S_ServerSetPageBuffer->buf), 5, "%d", S_ServerSetPageBuffer->serverSet.serverPort);
+		DisText(0x1fc0, S_ServerSetPageBuffer->buf, strlen(S_ServerSetPageBuffer->buf)+1);
 	}
+	
+	SelectPage(148);
 }
 
 /***************************************************************************************************
@@ -97,76 +102,45 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(S_WifiPageBuffer)
+	/*命令*/
+	S_ServerSetPageBuffer->lcdinput[0] = pbuf[4];
+	S_ServerSetPageBuffer->lcdinput[0] = (S_ServerSetPageBuffer->lcdinput[0]<<8) + pbuf[5];
+
+	/*设置IP*/
+	if(S_ServerSetPageBuffer->lcdinput[0] == 0x1FB0)
 	{
-		/*命令*/
-		S_WifiPageBuffer->lcdinput[0] = pbuf[4];
-		S_WifiPageBuffer->lcdinput[0] = (S_WifiPageBuffer->lcdinput[0]<<8) + pbuf[5];
-
-		/*获得密码连接wifi*/
-		if(S_WifiPageBuffer->lcdinput[0] == 0x1E70)
+		SetServerIP(&pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
+		S_ServerSetPageBuffer->ischanged = 1;
+	}
+	/*设置端口号*/
+	else if(S_ServerSetPageBuffer->lcdinput[0] == 0x1FC0)
+	{
+		SetServerPort(&pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
+		S_ServerSetPageBuffer->ischanged = 1;
+	}
+	/*确认修改*/
+	else if(S_ServerSetPageBuffer->lcdinput[0] == 0x1FA2)
+	{
+		if(1 == S_ServerSetPageBuffer->ischanged)
 		{
-			SendKeyCode(4);
-
-			memcpy(S_WifiPageBuffer->wifip->key, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
-			if(My_Fail == ConnectWifi(S_WifiPageBuffer->wifip))
+			memcpy(&(S_ServerSetPageBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
+		
+			memcpy(&(S_ServerSetPageBuffer->systemSetData.serverSet), &(S_ServerSetPageBuffer->serverSet), ServerSetStructSize);
+				
+			if(My_Pass == SaveSystemSetData(&(S_ServerSetPageBuffer->systemSetData)))
 			{
-				SendKeyCode(16);
-				vTaskDelay(100/portTICK_RATE_MS);
-				SendKeyCode(2);
+				SendKeyCode(1);
+
+				S_ServerSetPageBuffer->ischanged = 0;
 			}
 			else
-			{
-				SendKeyCode(16);
-				vTaskDelay(100/portTICK_RATE_MS);
-				SendKeyCode(1);
-				SaveWifiData(S_WifiPageBuffer->wifip);
-			}
+				SendKeyCode(2);
 		}
-		/*上一页*/
-		else if(S_WifiPageBuffer->lcdinput[0] == 0x1E52)
-		{
-			if(S_WifiPageBuffer->pageindex > 0)
-			{
-				S_WifiPageBuffer->pageindex--;
-				DisListText();
-			}
-		}
-		/*下一页*/
-		else if(S_WifiPageBuffer->lcdinput[0] == 0x1E53)
-		{
-			if(S_WifiPageBuffer->pageindex < (MaxWifiListNum/PageWifiNum-1))
-			{
-				if(strlen(S_WifiPageBuffer->wifilist[(S_WifiPageBuffer->pageindex+1)*PageWifiNum].ssid) > 0)
-				{
-					S_WifiPageBuffer->pageindex++;
-					DisListText();
-				}
-			}
-		}
-		/*返回*/
-		else if(S_WifiPageBuffer->lcdinput[0] == 0x1E50)
-		{
-			RestartWifi();
-			
-			backToFatherActivity();
-		}
-		/*刷新*/
-		else if(S_WifiPageBuffer->lcdinput[0] == 0x1E51)
-		{
-			RefreshWifi();
-			DisListText();
-		}
-		/*选择wifi*/
-		else if((S_WifiPageBuffer->lcdinput[0] >= 0x1E58)&&(S_WifiPageBuffer->lcdinput[0] <= 0x1E5F))
-		{
-			/*判断选择的wifi是否超出了有效列表*/
-			if(strlen(S_WifiPageBuffer->wifilist[(S_WifiPageBuffer->pageindex)*PageWifiNum+(S_WifiPageBuffer->lcdinput[0] - 0x1E58)].ssid) > 0)
-			{
-				S_WifiPageBuffer->selectindex = (S_WifiPageBuffer->lcdinput[0] - 0x1E58)+1;
-				CheckIsNeedKey();
-			}
-		}
+	}
+	/*返回*/
+	else if(S_ServerSetPageBuffer->lcdinput[0] == 0x1FA1)
+	{
+		backToFatherActivity();
 	}
 }
 
@@ -209,12 +183,8 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
-	if(S_WifiPageBuffer)
-	{
 
-	}
-	
-	SelectPage(112);
+	SelectPage(148);
 }
 
 /***************************************************************************************************
@@ -229,9 +199,6 @@ static void activityResume(void)
 static void activityDestroy(void)
 {
 	activityBufferFree();
-	
-	//设置wifi处于能上传数据模式
-	giveWifixMutex();
 }
 
 /***************************************************************************************************
@@ -245,13 +212,13 @@ static void activityDestroy(void)
 ***************************************************************************************************/
 static MyState_TypeDef activityBufferMalloc(void)
 {
-	if(NULL == S_WifiPageBuffer)
+	if(NULL == S_ServerSetPageBuffer)
 	{
-		S_WifiPageBuffer = MyMalloc(sizeof(WifiPageBuffer));
+		S_ServerSetPageBuffer = MyMalloc(sizeof(ServerSetPageBuffer));
 		
-		if(S_WifiPageBuffer)
+		if(S_ServerSetPageBuffer)
 		{
-			memset(S_WifiPageBuffer, 0, sizeof(WifiPageBuffer));
+			memset(S_ServerSetPageBuffer, 0, sizeof(ServerSetPageBuffer));
 	
 			return My_Pass;
 		}
@@ -273,8 +240,8 @@ static MyState_TypeDef activityBufferMalloc(void)
 ***************************************************************************************************/
 static void activityBufferFree(void)
 {
-	MyFree(S_WifiPageBuffer);
-	S_WifiPageBuffer = NULL;
+	MyFree(S_ServerSetPageBuffer);
+	S_ServerSetPageBuffer = NULL;
 }
 
 /***************************************************************************************************/
@@ -282,149 +249,97 @@ static void activityBufferFree(void)
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
-static void RefreshWifi(void)
-{	
-	vTaskDelay(200 / portTICK_RATE_MS);
-	SendKeyCode(5);
-	
-	S_WifiPageBuffer->pageindex = 0;
-	S_WifiPageBuffer->selectindex = 0;
-	
-	if(S_WifiPageBuffer->isGetWifiControl == false)
-	{
-		if(My_Fail == takeWifiMutex(10000 / portTICK_RATE_MS))
-		{
-			SendKeyCode(6);
-			return;
-		}
-		else
-			S_WifiPageBuffer->isGetWifiControl = true;
-	}
-	
-	/*如果不是at模式，则进入at模式*/
-	if(My_Fail == SetWifiWorkInAT(AT_Mode))
-	{
-		SendKeyCode(17);
-		return;
-	}
-	
-	memset(S_WifiPageBuffer->wifilist, 0, sizeof(WIFI_Def)*MaxWifiListNum);
-		
-	ScanApList(S_WifiPageBuffer->wifilist);
-		
-	SendKeyCode(17);
 
-}
-
-/*刷新列表数据*/
-static void DisListText(void)
+static void SetServerIP(unsigned char *buf, unsigned char len)
 {
-	unsigned char i=0;
-	
-	S_WifiPageBuffer->wifinum = 0;
-	S_WifiPageBuffer->wifip = &(S_WifiPageBuffer->wifilist[S_WifiPageBuffer->pageindex*PageWifiNum]);
-	
-	for(i=0; i<PageWifiNum; i++)
+	S_ServerSetPageBuffer->tempBuf = strtok((char *)buf, ".");
+	if(S_ServerSetPageBuffer->tempBuf)
 	{
-		if(strlen(S_WifiPageBuffer->wifip->ssid) > 0)
+		S_ServerSetPageBuffer->tempValue = strtol(S_ServerSetPageBuffer->tempBuf, NULL, 10);
+		if(S_ServerSetPageBuffer->tempValue > 255)
 		{
-			snprintf(S_WifiPageBuffer->buf, 100, "%s", S_WifiPageBuffer->wifip->ssid);
-			
-			S_WifiPageBuffer->myico[i].X = 600;
-			S_WifiPageBuffer->myico[i].Y = 142+i*40;
-				
-			if(S_WifiPageBuffer->wifip->indicator <= 10)
-				S_WifiPageBuffer->myico[i].ICO_ID = 25;
-			else if(S_WifiPageBuffer->wifip->indicator < 40)
-				S_WifiPageBuffer->myico[i].ICO_ID = 26;
-			else if(S_WifiPageBuffer->wifip->indicator < 70)
-				S_WifiPageBuffer->myico[i].ICO_ID = 27;
-			else
-				S_WifiPageBuffer->myico[i].ICO_ID = 28;
-			
-			S_WifiPageBuffer->wifinum = i+1;
-			S_WifiPageBuffer->wifip++;
-		}
-		else
-			sprintf(S_WifiPageBuffer->buf, "\0");
-		
-		DisText(0x1E80+i*0x10, S_WifiPageBuffer->buf, strlen(S_WifiPageBuffer->buf)+1);
-	}
-	
-	BasicUI(0x1F00 ,0x1807 , S_WifiPageBuffer->wifinum, S_WifiPageBuffer->myico , sizeof(Basic_ICO)*S_WifiPageBuffer->wifinum);
-}
-
-
-static void CheckIsNeedKey(void)
-{
-	static char *security = NULL;
-	
-	if(S_WifiPageBuffer)
-	{
-		if((S_WifiPageBuffer->selectindex <= 0)||(S_WifiPageBuffer->selectindex > PageWifiNum))
-			return;
-		
-		S_WifiPageBuffer->wifip = &(S_WifiPageBuffer->wifilist[(S_WifiPageBuffer->pageindex)*PageWifiNum+S_WifiPageBuffer->selectindex-1]);
-		
-		security = strstr(S_WifiPageBuffer->wifip->auth, "OPEN");
-		/*不需要密码*/
-		if(security)
-		{
-			SendKeyCode(4);
-
-			if(My_Fail == ConnectWifi(S_WifiPageBuffer->wifip))
-			{
-				SendKeyCode(16);
-				vTaskDelay(100 / portTICK_RATE_MS);
-				SendKeyCode(2);
-			}
-			else
-			{
-				SendKeyCode(16);
-				vTaskDelay(100 / portTICK_RATE_MS);
-				SendKeyCode(1);	
-			}
-		}
-		/*已保存密码*/
-		else if(My_Pass == ReadWifiData(S_WifiPageBuffer->wifip))
-		{
-			SendKeyCode(4);
-
-			if(My_Fail == ConnectWifi(S_WifiPageBuffer->wifip))
-			{
-				SendKeyCode(16);
-				vTaskDelay(100 / portTICK_RATE_MS);
-				SendKeyCode(3);
-				deleteWifi(S_WifiPageBuffer->wifip);
-			}
-			else
-			{
-				SendKeyCode(16);
-				vTaskDelay(100 / portTICK_RATE_MS);
-				SendKeyCode(1);	
-			}
-		}
-		/*输入密码*/
-		else
 			SendKeyCode(3);
-	}
-}
-
-static MyState_TypeDef connectWifiFun(void)
-{
-	SendKeyCode(4);
-
-	if(My_Fail == ConnectWifi(S_WifiPageBuffer->wifip))
-	{
-		SendKeyCode(16);
-		vTaskDelay(100 / portTICK_RATE_MS);
-		SendKeyCode(2);
+			goto END;
+		}
+		
+		S_ServerSetPageBuffer->serverSet.serverIP.ip_1 = S_ServerSetPageBuffer->tempValue;
 	}
 	else
 	{
-		SendKeyCode(16);
-
-		SendKeyCode(1);
-		
+		SendKeyCode(3);
+		goto END;
 	}
+	
+	S_ServerSetPageBuffer->tempBuf = strtok(NULL, ".");
+	if(S_ServerSetPageBuffer->tempBuf)
+	{
+		S_ServerSetPageBuffer->tempValue = strtol(S_ServerSetPageBuffer->tempBuf, NULL, 10);
+		if(S_ServerSetPageBuffer->tempValue > 255)
+		{
+			SendKeyCode(3);
+			goto END;
+		}
+		
+		S_ServerSetPageBuffer->serverSet.serverIP.ip_2 = S_ServerSetPageBuffer->tempValue;
+	}
+	else
+	{
+		SendKeyCode(3);
+		goto END;
+	}
+	
+	S_ServerSetPageBuffer->tempBuf = strtok(NULL, ".");
+	if(S_ServerSetPageBuffer->tempBuf)
+	{
+		S_ServerSetPageBuffer->tempValue = strtol(S_ServerSetPageBuffer->tempBuf, NULL, 10);
+		if(S_ServerSetPageBuffer->tempValue > 255)
+		{
+			SendKeyCode(3);
+			goto END;
+		}
+		
+		S_ServerSetPageBuffer->serverSet.serverIP.ip_3 = S_ServerSetPageBuffer->tempValue;
+	}
+	else
+	{
+		SendKeyCode(3);
+		goto END;
+	}
+	
+	S_ServerSetPageBuffer->tempBuf = strtok(NULL, ".");
+	if(S_ServerSetPageBuffer->tempBuf)
+	{
+		S_ServerSetPageBuffer->tempValue = strtol(S_ServerSetPageBuffer->tempBuf, NULL, 10);
+		if(S_ServerSetPageBuffer->tempValue > 255)
+		{
+			SendKeyCode(3);
+			goto END;
+		}
+		
+		S_ServerSetPageBuffer->serverSet.serverIP.ip_4 = S_ServerSetPageBuffer->tempValue;
+	}
+	else
+	{
+		SendKeyCode(3);
+		goto END;
+	}
+	
+	END:
+		snprintf((S_ServerSetPageBuffer->buf), 16, "%d.%d.%d.%d", S_ServerSetPageBuffer->serverSet.serverIP.ip_1, S_ServerSetPageBuffer->serverSet.serverIP.ip_2, 
+			S_ServerSetPageBuffer->serverSet.serverIP.ip_3, S_ServerSetPageBuffer->serverSet.serverIP.ip_4);
+		DisText(0x1fb0, S_ServerSetPageBuffer->buf, strlen(S_ServerSetPageBuffer->buf)+1);
+}
+
+static void SetServerPort(unsigned char *buf, unsigned char len)
+{
+	S_ServerSetPageBuffer->tempValue = strtol((char *)buf, NULL, 10);
+	if(S_ServerSetPageBuffer->tempValue > 65535)
+	{
+		SendKeyCode(3);
+	}
+	else
+		S_ServerSetPageBuffer->serverSet.serverPort = S_ServerSetPageBuffer->tempValue;
+	
+	snprintf((S_ServerSetPageBuffer->buf), 5, "%d", S_ServerSetPageBuffer->serverSet.serverPort);
+	DisText(0x1fc0, S_ServerSetPageBuffer->buf, strlen(S_ServerSetPageBuffer->buf)+1);
 }

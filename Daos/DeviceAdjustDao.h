@@ -1,13 +1,13 @@
 /****************************************file start****************************************************/
-#ifndef _DEVICEDAO_D_H
-#define	_DEVICEDAO_D_H
+#ifndef _DEVICEADJUSTDAO_D_H
+#define	_DEVICEADJUSTDAO_D_H
 
 #include	"Define.h"
-#include	"Operator.h"
 #include	"DeviceAdjust.h"
 
-MyState_TypeDef SaveDeviceAdjustToFile(DeviceAdjust * deviceAdjust);
-MyState_TypeDef ReadDeviceAdjustFromFile(DeviceAdjust * deviceAdjust);
+MyState_TypeDef writeDeviceAdjustToFile(DeviceAdjust * deviceAdjust);
+MyState_TypeDef readDeviceAdjustFromFile(DeviceAdjustReadPackge * deviceAdjustReadPackge);
+MyState_TypeDef plusDeviceAdjustHeaderUpLoadIndexToFile(unsigned int index);
 MyState_TypeDef deleteDeviceAdjustFile(void);
 
 #endif

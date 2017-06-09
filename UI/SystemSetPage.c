@@ -19,6 +19,8 @@
 #include	"AdjustLedPage.h"
 #include	"AboutUsPage.h"
 #include	"SystemResetFun.h"
+#include	"ErrorRecordPage.h"
+#include	"AdjustRecordPage.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -82,11 +84,6 @@ MyState_TypeDef createSystemSetActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_SysSetPageBuffer)
-	{
-
-	}
-		
 	SelectPage(98);
 }
 
@@ -125,7 +122,21 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		//数据管理
 		else if(S_SysSetPageBuffer->lcdinput[0] == 0x1903)
 		{
-			startActivity(createRecordActivity, NULL);
+			/*数据*/
+			S_SysSetPageBuffer->lcdinput[1] = pbuf[7];
+			S_SysSetPageBuffer->lcdinput[1] = (S_SysSetPageBuffer->lcdinput[1]<<8) + pbuf[8];
+			
+			/*更换检测卡*/
+			if(S_SysSetPageBuffer->lcdinput[1] == 0x0001)
+				startActivity(createRecordActivity, NULL);
+			else if(S_SysSetPageBuffer->lcdinput[1] == 0x0002)
+				startActivity(createErrorRecordActivity, NULL);
+			else if(S_SysSetPageBuffer->lcdinput[1] == 0x0003)
+				startActivity(createAdjustRecordActivity, NULL);
+			else if(S_SysSetPageBuffer->lcdinput[1] == 0x0004)
+				startActivity(createAdjustRecordActivity, NULL);
+			else if(S_SysSetPageBuffer->lcdinput[1] == 0x0005)
+				startActivity(createAdjustRecordActivity, NULL);
 		}
 		//关于按键第一次按下
 		else if(S_SysSetPageBuffer->lcdinput[0] == 0x1909)

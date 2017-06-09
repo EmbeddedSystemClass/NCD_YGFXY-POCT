@@ -857,6 +857,21 @@
               <FileType>1</FileType>
               <FilePath>..\UI\AboutUsPage.c</FilePath>
             </File>
+            <File>
+              <FileName>ServerSetPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\ServerSetPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>ErrorRecordPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\ErrorRecordPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>AdjustRecordPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\AdjustRecordPage.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -898,11 +913,6 @@
               <FilePath>..\Entity\AdjustData.h</FilePath>
             </File>
             <File>
-              <FileName>TestSeries.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Entity\TestSeries.h</FilePath>
-            </File>
-            <File>
               <FileName>Temperature.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Entity\Temperature.h</FilePath>
@@ -936,6 +946,11 @@
               <FileName>DeviceAdjust.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Entity\DeviceAdjust.h</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceError.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\DeviceError.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1016,6 +1031,11 @@
               <FileName>DeviceAdjustDao.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Daos\DeviceAdjustDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceErrorDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceErrorDao.c</FilePath>
             </File>
           </Files>
         </Group>
