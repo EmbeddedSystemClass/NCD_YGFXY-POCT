@@ -3,9 +3,11 @@
 
 #include	"UI_Data.h"
 #include	"SystemSet_Data.h"
+#include	"Operator.h"
 
 typedef struct SysSetPageBuffer_tag {
 	unsigned char pressCnt;
+	Operator * operator;
 	unsigned short lcdinput[100];
 }SysSetPageBuffer;
 

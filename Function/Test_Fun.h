@@ -26,13 +26,13 @@ typedef struct TempCalData_tag{
 	double lastdata;														//记录上次滤波数据
 	
 	unsigned short maxdata;
-	PaiduiUnitData * paiduiUnitData;												//测试数据指针
+	TestData * testData;												//测试数据指针
 	ResultState resultstatues;											//测试结果状态
 }TempCalData;
 #pragma pack()
 
 MyState_TypeDef InitTestFunData(void);
-ResultState TestFunction(void * parm);
+ResultState TestFunction(TestData * parm);
 
 MyState_TypeDef TakeTestPointData(void * data);
 MyState_TypeDef TakeTestResultData(void * data);

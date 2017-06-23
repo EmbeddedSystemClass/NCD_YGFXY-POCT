@@ -83,7 +83,7 @@ static void vTestTask( void *pvParameters )
 }
 
 
-MyState_TypeDef StartTest(void * parm)
+MyState_TypeDef StartTest(TestData * parm)
 {
 	if(pdPASS == xQueueSend( xStartTestQueue, &parm, 10/portTICK_RATE_MS ))
 		return My_Pass;

@@ -72,7 +72,7 @@ static void vSystemStartTask( void *pvParameters )
 	StartvPlaySongTask();
 	
 	/*显示欢迎界面*/
-	startActivity(createWelcomeActivity, NULL);
+	startActivity(createWelcomeActivity, NULL, NULL);
 	
 	/*系统界面控制任务*/
 	StartvSystemUITask();

@@ -304,7 +304,7 @@ static void ShowDetail(void)
 	
 	if(S_UserMPageBuffer->tempnewuser.crc == CalModbusCRC16Fun1(&(S_UserMPageBuffer->tempnewuser), OneOperatorStructSizeWithOutCrc))
 	{	
-		BasicPic(0x1d40, 1, 137, 266, 215, 559, 284, 157, 135+(S_UserMPageBuffer->selectindex-1)*72);	
+		BasicPic(0x1d40, 1, 137, 11, 10, 303, 79, 157, 135+(S_UserMPageBuffer->selectindex-1)*72);	
 	}
 	else
 		BasicPic(0x1d40, 0, 137, 266, 215, 559, 284, 157, 135+(S_UserMPageBuffer->selectindex-1)*72);

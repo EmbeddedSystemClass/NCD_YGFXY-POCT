@@ -468,7 +468,7 @@ static void CheckQRCode(void)
 
 			S_ReTestPageBuffer->reTestData.retestStep = 3;
 			S_ReTestPageBuffer->reTestData.paiduiUnitData.ledLight = getGBSystemSetData()->testLedLightIntensity;
-			StartTest(&(S_ReTestPageBuffer->reTestData.paiduiUnitData));
+			StartTest(&(S_ReTestPageBuffer->reTestData.paiduiUnitData.testData));
 		}
 		/*ÆäËû´íÎó£ºCardCodeScanFail, CardCodeCardOut, CardCodeScanTimeOut, CardCodeCRCError*/
 		else

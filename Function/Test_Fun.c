@@ -20,6 +20,7 @@
 #include	"CRC16.h"
 #include 	"MLX90614_Driver.h"
 #include	"System_Data.h"
+#include	"SystemSet_Data.h"
 
 #include	"MyMem.h"
 
@@ -119,7 +120,7 @@ MyState_TypeDef TakeTestPointData(void * data)
 *Author: xsx
 *Date: 
 ***************************************************************************************************/
-ResultState TestFunction(void * parm)
+ResultState TestFunction(TestData * parm)
 {
 	unsigned short steps = EndTestLocation - StartTestLocation;
 	unsigned short i = 0, j=0;
@@ -142,16 +143,16 @@ ResultState TestFunction(void * parm)
 	{
 		memset(S_TempCalData, 0, sizeof(TempCalData));
 		//测试数据指针指向传进来的真实数据空间
-		S_TempCalData->paiduiUnitData = parm;
+		S_TempCalData->testData = parm;
 		
 		//初始配置
-		SetGB_LedValue(S_TempCalData->paiduiUnitData->ledLight);
+		SetGB_LedValue(getGBSystemSetData()->testLedLightIntensity);
 		vTaskDelay(10/portTICK_RATE_MS);
 		
 		SetGB_CLineValue(0);
 		vTaskDelay(10/portTICK_RATE_MS);
 		
-		SelectChannel(S_TempCalData->paiduiUnitData->testData.qrCode.ChannelNum);
+		SelectChannel(S_TempCalData->testData->qrCode.ChannelNum);
 		vTaskDelay(10/portTICK_RATE_MS);
 		
 		SMBUS_SCK_L();
@@ -194,9 +195,9 @@ ResultState TestFunction(void * parm)
 						
 						S_TempCalData->tempvalue2 /= FilterNum;
 						
-						S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[index - FilterNum] = S_TempCalData->tempvalue2;
+						S_TempCalData->testData->testSeries.TestPoint[index - FilterNum] = S_TempCalData->tempvalue2;
 							
-						SendTestPointData(&(S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[index - FilterNum]));
+						SendTestPointData(&(S_TempCalData->testData->testSeries.TestPoint[index - FilterNum]));
 					}
 						
 					S_TempCalData->tempvalue1 = 0;
@@ -209,8 +210,8 @@ ResultState TestFunction(void * parm)
 			if(S_TempCalData->resultstatues == NoResult)
 			{
 				//发送一个特定数据，清除曲线
-				S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[0] = 0xffff;
-				SendTestPointData(&(S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[0]));
+				S_TempCalData->testData->testSeries.TestPoint[0] = 0xffff;
+				SendTestPointData(&(S_TempCalData->testData->testSeries.TestPoint[0]));
 				goto repeat;
 			}
 
@@ -239,14 +240,14 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 	
 	{
 		//计算最大值,平均值
-		S_TempCalData->maxdata = S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[0];
+		S_TempCalData->maxdata = S_TempCalData->testData->testSeries.TestPoint[0];
 		S_TempCalData->tempvalue1 = 0;
 		for(i=0; i<MaxPointLen; i++)
 		{
-			if(S_TempCalData->maxdata < S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i])
-				S_TempCalData->maxdata = S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i];
+			if(S_TempCalData->maxdata < S_TempCalData->testData->testSeries.TestPoint[i])
+				S_TempCalData->maxdata = S_TempCalData->testData->testSeries.TestPoint[i];
 			
-			S_TempCalData->tempvalue1 += S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i];
+			S_TempCalData->tempvalue1 += S_TempCalData->testData->testSeries.TestPoint[i];
 		}
 		
 		/*判断测试值是否饱和*/
@@ -278,7 +279,7 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		S_TempCalData->tempvalue1 = 0;
 		for(i=0; i<MaxPointLen; i++)
 		{
-			S_TempCalData->tempvalue2 = S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i];
+			S_TempCalData->tempvalue2 = S_TempCalData->testData->testSeries.TestPoint[i];
 			S_TempCalData->tempvalue2 -= S_TempCalData->average;
 			S_TempCalData->tempvalue2 *= S_TempCalData->tempvalue2;
 			S_TempCalData->tempvalue1 += S_TempCalData->tempvalue2;
@@ -290,21 +291,21 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		S_TempCalData->CV1 = S_TempCalData->stdev / S_TempCalData->average;
 		
 		//找c线
-		S_TempCalData->paiduiUnitData->testData.testSeries.C_Point[0] = 0;
-		for(i=S_TempCalData->paiduiUnitData->testData.qrCode.CLineLocation-30; i<S_TempCalData->paiduiUnitData->testData.qrCode.CLineLocation+30; i++)
+		S_TempCalData->testData->testSeries.C_Point[0] = 0;
+		for(i=S_TempCalData->testData->qrCode.CLineLocation-30; i<S_TempCalData->testData->qrCode.CLineLocation+30; i++)
 		{
-			if(S_TempCalData->paiduiUnitData->testData.testSeries.C_Point[0] < S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i])
+			if(S_TempCalData->testData->testSeries.C_Point[0] < S_TempCalData->testData->testSeries.TestPoint[i])
 			{
-				S_TempCalData->paiduiUnitData->testData.testSeries.C_Point[0] = S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i];
-				S_TempCalData->paiduiUnitData->testData.testSeries.C_Point[1] = i;
+				S_TempCalData->testData->testSeries.C_Point[0] = S_TempCalData->testData->testSeries.TestPoint[i];
+				S_TempCalData->testData->testSeries.C_Point[1] = i;
 			}
 		}
 		
 		//判断C线是不是真实存在
 		S_TempCalData->tempvalue1 = 0;
-		for(i=S_TempCalData->paiduiUnitData->testData.testSeries.C_Point[1] - 15; i<S_TempCalData->paiduiUnitData->testData.testSeries.C_Point[1] + 15; i++)
+		for(i=S_TempCalData->testData->testSeries.C_Point[1] - 15; i<S_TempCalData->testData->testSeries.C_Point[1] + 15; i++)
 		{
-			S_TempCalData->tempvalue1 += S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i];
+			S_TempCalData->tempvalue1 += S_TempCalData->testData->testSeries.TestPoint[i];
 		}
 		
 		//平均值
@@ -312,9 +313,9 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		
 		//计算标准差
 		S_TempCalData->tempvalue1 = 0;
-		for(i=S_TempCalData->paiduiUnitData->testData.testSeries.C_Point[1] - 15; i<S_TempCalData->paiduiUnitData->testData.testSeries.C_Point[1] + 15; i++)
+		for(i=S_TempCalData->testData->testSeries.C_Point[1] - 15; i<S_TempCalData->testData->testSeries.C_Point[1] + 15; i++)
 		{
-			S_TempCalData->tempvalue2 = S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i];
+			S_TempCalData->tempvalue2 = S_TempCalData->testData->testSeries.TestPoint[i];
 			S_TempCalData->tempvalue2 -= S_TempCalData->average;
 			S_TempCalData->tempvalue2 *= S_TempCalData->tempvalue2;
 			S_TempCalData->tempvalue1 += S_TempCalData->tempvalue2;
@@ -326,81 +327,82 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		S_TempCalData->CV2 = S_TempCalData->stdev / S_TempCalData->average;
 	
 		//找T线
-		S_TempCalData->paiduiUnitData->testData.testSeries.T_Point[0] = 0;
-		for(i=S_TempCalData->paiduiUnitData->testData.qrCode.ItemLocation-30; i<S_TempCalData->paiduiUnitData->testData.qrCode.ItemLocation+30; i++)
+		S_TempCalData->testData->testSeries.T_Point[0] = 0;
+		for(i=S_TempCalData->testData->qrCode.ItemLocation-30; i<S_TempCalData->testData->qrCode.ItemLocation+30; i++)
 		{
-			if(S_TempCalData->paiduiUnitData->testData.testSeries.T_Point[0] < S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i])
+			if(S_TempCalData->testData->testSeries.T_Point[0] < S_TempCalData->testData->testSeries.TestPoint[i])
 			{
-				S_TempCalData->paiduiUnitData->testData.testSeries.T_Point[0] = S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i];
-				S_TempCalData->paiduiUnitData->testData.testSeries.T_Point[1] = i;
+				S_TempCalData->testData->testSeries.T_Point[0] = S_TempCalData->testData->testSeries.TestPoint[i];
+				S_TempCalData->testData->testSeries.T_Point[1] = i;
 			}
 		}
 
 		//找基线
-		S_TempCalData->paiduiUnitData->testData.testSeries.B_Point[0] = 0xffff;
-//		for(i=S_TempCalData->paiduiUnitData->testData.testSeries.C_Point[1]; i<MaxPointLen; i++)
-		for(i=S_TempCalData->paiduiUnitData->testData.testSeries.T_Point[1]; i<S_TempCalData->paiduiUnitData->testData.testSeries.C_Point[1]; i++)
+		S_TempCalData->testData->testSeries.B_Point[0] = 0xffff;
+//		for(i=S_TempCalData->testData->testSeries.C_Point[1]; i<MaxPointLen; i++)
+		for(i=S_TempCalData->testData->testSeries.T_Point[1]; i<S_TempCalData->testData->testSeries.C_Point[1]; i++)
 		{
-			if(S_TempCalData->paiduiUnitData->testData.testSeries.B_Point[0] > S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i])
+			if(S_TempCalData->testData->testSeries.B_Point[0] > S_TempCalData->testData->testSeries.TestPoint[i])
 			{
-				S_TempCalData->paiduiUnitData->testData.testSeries.B_Point[0] = S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i];
-				S_TempCalData->paiduiUnitData->testData.testSeries.B_Point[1] = i;
+				S_TempCalData->testData->testSeries.B_Point[0] = S_TempCalData->testData->testSeries.TestPoint[i];
+				S_TempCalData->testData->testSeries.B_Point[1] = i;
 			}
 		}
 				
 		/*计算结果*/
-		S_TempCalData->tempvalue2 = (S_TempCalData->paiduiUnitData->testData.testSeries.T_Point[0] - S_TempCalData->paiduiUnitData->testData.testSeries.B_Point[0]);
-		S_TempCalData->tempvalue2 /= (S_TempCalData->paiduiUnitData->testData.testSeries.C_Point[0] - S_TempCalData->paiduiUnitData->testData.testSeries.B_Point[0]);
+		S_TempCalData->tempvalue2 = (S_TempCalData->testData->testSeries.T_Point[0] - S_TempCalData->testData->testSeries.B_Point[0]);
+		S_TempCalData->tempvalue2 /= (S_TempCalData->testData->testSeries.C_Point[0] - S_TempCalData->testData->testSeries.B_Point[0]);
 				
 		/*原始峰高比*/
-		S_TempCalData->paiduiUnitData->testData.testSeries.BasicBili = S_TempCalData->tempvalue2;
+		S_TempCalData->testData->testSeries.BasicBili = S_TempCalData->tempvalue2;
 				
 		/*根据分段，计算原始结果*/
-		if((S_TempCalData->paiduiUnitData->testData.testSeries.BasicBili < S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[0]) || (S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[0] == 0))
+		if((S_TempCalData->testData->testSeries.BasicBili < S_TempCalData->testData->qrCode.ItemFenDuan[0]) || (S_TempCalData->testData->qrCode.ItemFenDuan[0] == 0))
 		{
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult = S_TempCalData->paiduiUnitData->testData.testSeries.BasicBili * S_TempCalData->paiduiUnitData->testData.testSeries.BasicBili;
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult *= S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[0][0];
+			S_TempCalData->testData->testSeries.BasicResult = S_TempCalData->testData->testSeries.BasicBili * S_TempCalData->testData->testSeries.BasicBili;
+			S_TempCalData->testData->testSeries.BasicResult *= S_TempCalData->testData->qrCode.ItemBiaoQu[0][0];
 					
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult += (S_TempCalData->paiduiUnitData->testData.testSeries.BasicBili * S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[0][1]);
+			S_TempCalData->testData->testSeries.BasicResult += (S_TempCalData->testData->testSeries.BasicBili * S_TempCalData->testData->qrCode.ItemBiaoQu[0][1]);
 					
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult += S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[0][2];
+			S_TempCalData->testData->testSeries.BasicResult += S_TempCalData->testData->qrCode.ItemBiaoQu[0][2];
 		}
-		else if((S_TempCalData->paiduiUnitData->testData.testSeries.BasicBili < S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[1]) || (S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[1] == 0))
+		else if((S_TempCalData->testData->testSeries.BasicBili < S_TempCalData->testData->qrCode.ItemFenDuan[1]) || (S_TempCalData->testData->qrCode.ItemFenDuan[1] == 0))
 		{
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult = S_TempCalData->paiduiUnitData->testData.testSeries.BasicBili * S_TempCalData->paiduiUnitData->testData.testSeries.BasicBili;
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult *= S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[1][0];
+			S_TempCalData->testData->testSeries.BasicResult = S_TempCalData->testData->testSeries.BasicBili * S_TempCalData->testData->testSeries.BasicBili;
+			S_TempCalData->testData->testSeries.BasicResult *= S_TempCalData->testData->qrCode.ItemBiaoQu[1][0];
 					
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult += (S_TempCalData->paiduiUnitData->testData.testSeries.BasicBili * S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[1][1]);
+			S_TempCalData->testData->testSeries.BasicResult += (S_TempCalData->testData->testSeries.BasicBili * S_TempCalData->testData->qrCode.ItemBiaoQu[1][1]);
 					
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult += S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[1][2];
+			S_TempCalData->testData->testSeries.BasicResult += S_TempCalData->testData->qrCode.ItemBiaoQu[1][2];
 		}
 		else
 		{
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult = S_TempCalData->paiduiUnitData->testData.testSeries.BasicBili * S_TempCalData->paiduiUnitData->testData.testSeries.BasicBili;
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult *= S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[2][0];
+			S_TempCalData->testData->testSeries.BasicResult = S_TempCalData->testData->testSeries.BasicBili * S_TempCalData->testData->testSeries.BasicBili;
+			S_TempCalData->testData->testSeries.BasicResult *= S_TempCalData->testData->qrCode.ItemBiaoQu[2][0];
 					
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult += (S_TempCalData->paiduiUnitData->testData.testSeries.BasicBili * S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[2][1]);
+			S_TempCalData->testData->testSeries.BasicResult += (S_TempCalData->testData->testSeries.BasicBili * S_TempCalData->testData->qrCode.ItemBiaoQu[2][1]);
 					
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult += S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[2][2];
+			S_TempCalData->testData->testSeries.BasicResult += S_TempCalData->testData->qrCode.ItemBiaoQu[2][2];
 		}
 
-		if(S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult < 0)
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult = 0;
+		if(S_TempCalData->testData->testSeries.BasicResult < 0)
+			S_TempCalData->testData->testSeries.BasicResult = 0;
 
 		if(S_TempCalData->CV1 < 0.025)
 		{
 			S_TempCalData->resultstatues = NoSample;
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult = 0;
+			S_TempCalData->testData->testSeries.BasicResult = 0;
 		}
 		else if(S_TempCalData->CV2 < 0.01)
 		{
 			S_TempCalData->resultstatues = PeakError;
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult = 0;
+			S_TempCalData->testData->testSeries.BasicResult = 0;
 		}
 		else
 			S_TempCalData->resultstatues = ResultIsOK;
 		
-		S_TempCalData->paiduiUnitData->testData.testSeries.AdjustResult =  S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult * S_TempCalData->paiduiUnitData->testData.adjustData.parm;
+		//根据校准参数对测试结果进行校准
+		S_TempCalData->testData->testSeries.AdjustResult =  S_TempCalData->testData->testSeries.BasicResult * S_TempCalData->testData->adjustData.parm;
 	}		
 }
 

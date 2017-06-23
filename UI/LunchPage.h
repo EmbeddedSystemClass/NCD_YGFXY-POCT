@@ -12,6 +12,7 @@ typedef struct LunchPageBuffer_tag {
 	char buf[100];
 	unsigned short lcdinput[100];
 	CreateTestErrorType error;
+	Operator * tempOperator;
 }LunchPageBuffer;
 
 MyState_TypeDef createLunchActivity(Activity * thizActivity, Intent * pram);

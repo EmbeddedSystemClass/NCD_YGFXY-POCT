@@ -138,7 +138,7 @@ void PaiDuiHandler(void)
 						UpOneModelData(index, R_OFF_G_ON, R_OFF_G_OFF, 0);
 						temp->statues = status_prereadagain_n;
 
-						startActivity(createPreReadCardActivity, NULL);
+						startActivity(createPreReadCardActivity, NULL, NULL);
 					}
 					//等待插入排队位
 					else if(temp->statues == status_in_n)
@@ -211,7 +211,7 @@ void PaiDuiHandler(void)
 						{
 							UpOneModelData(index, R_OFF_G_ON, R_OFF_G_OFF, 0);
 							temp->statues = status_prereadagain_n;
-							startActivity(createPreReadCardActivity, NULL);
+							startActivity(createPreReadCardActivity, NULL, NULL);
 						}
 						else if(TimeOut == timer_expired(&(temp->timer3)))
 						{
@@ -319,7 +319,7 @@ void PaiDuiHandler(void)
 					if(false == CheckStrIsSame(paiduiActivityName, getCurrentActivityName(), strlen(paiduiActivityName)))
 					{
 						backToActivity(lunchActivityName);
-						startActivity(createPaiDuiActivity, NULL);
+						startActivity(createPaiDuiActivity, NULL, NULL);
 					}
 				}
 			}
@@ -428,7 +428,7 @@ void PaiDuiHandler(void)
 							UpOneModelData(index, R_OFF_G_ON, R_OFF_G_OFF, 0);
 							temp->statues = status_prereadagain_o;
 							
-							startActivity(createPreReadCardActivity, NULL);
+							startActivity(createPreReadCardActivity, NULL, NULL);
 						}
 						else if(TimeOut == timer_expired(&(temp->timer3)))
 						{
@@ -478,7 +478,7 @@ void PaiDuiHandler(void)
 					if(false == CheckStrIsSame(paiduiActivityName, getCurrentActivityName(), strlen(paiduiActivityName)))
 					{
 						backToActivity(lunchActivityName);
-						startActivity(createPaiDuiActivity, NULL);
+						startActivity(createPaiDuiActivity, NULL, NULL);
 					}
 				}
 			}
@@ -494,7 +494,7 @@ void PaiDuiHandler(void)
 			if(GetCurrentTestItem() == NULL)
 			{
 				backToActivity(lunchActivityName);
-				startActivity(createPaiDuiActivity, NULL);
+				startActivity(createPaiDuiActivity, NULL, NULL);
 			}
 		}
 	}

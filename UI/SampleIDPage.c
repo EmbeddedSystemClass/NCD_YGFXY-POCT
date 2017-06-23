@@ -139,7 +139,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			}
 			else
 			{
-				startActivity(createWaittingCardActivity, NULL);
+				startActivity(createWaittingCardActivity, NULL, NULL);
 			}
 		}
 		/*获取输入的id*/

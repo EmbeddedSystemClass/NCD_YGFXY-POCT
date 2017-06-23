@@ -162,7 +162,7 @@ static void activityFresh(void)
 				StartPaiduiTask();
 					
 				destroyTopActivity();
-				startActivity(createLunchActivity, NULL);
+				startActivity(createLunchActivity, NULL, NULL);
 				
 				return;
 			}

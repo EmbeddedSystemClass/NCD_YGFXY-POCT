@@ -11,6 +11,7 @@
 #include	"SystemSetPage.h"
 #include	"SelectUserPage.h"
 #include	"PaiDuiPage.h"
+#include	"SampleIDPage.h"
 #include	"SleepPage.h"
 #include	"PlaySong_Task.h"
 
@@ -113,12 +114,12 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		//设置
 		if(S_LunchPageBuffer->lcdinput[0] == 0x1103)
 		{
-			startActivity(createSystemSetActivity, NULL);
+			startActivity(createSystemSetActivity, NULL, NULL);
 		}
 		//查看数据
 		else if(S_LunchPageBuffer->lcdinput[0] == 0x1102)
 		{	
-			startActivity(createRecordActivity, NULL);
+			startActivity(createRecordActivity, NULL, NULL);
 		}
 		//常规测试
 		else if(S_LunchPageBuffer->lcdinput[0] == 0x1100)
@@ -127,7 +128,8 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			//创建成功
 			if(Error_OK == S_LunchPageBuffer->error)
 			{
-				startActivity(createSelectUserActivity, NULL);
+				S_LunchPageBuffer->tempOperator = &(GetCurrentTestItem()->testData.operator);
+				startActivity(createSelectUserActivity, createIntent(&(S_LunchPageBuffer->tempOperator), 4), createSampleActivity);
 			}
 			//禁止常规测试
 			else if(Error_StopNormalTest == S_LunchPageBuffer->error)
@@ -148,7 +150,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			//有卡排队，则进入排队界面
 			if(true == IsPaiDuiTestting())
 			{
-				startActivity(createPaiDuiActivity, NULL);
+				startActivity(createPaiDuiActivity, NULL, NULL);
 			}
 			//无卡排队则开始创建
 			else
@@ -157,7 +159,8 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 				//创建成功
 				if(Error_OK == S_LunchPageBuffer->error)
 				{
-					startActivity(createSelectUserActivity, NULL);
+					S_LunchPageBuffer->tempOperator = &(GetCurrentTestItem()->testData.operator);
+					startActivity(createSelectUserActivity, createIntent(&(S_LunchPageBuffer->tempOperator), 4), createSampleActivity);
 				}
 				//创建失败
 				else if(Error_Mem == S_LunchPageBuffer->error)
@@ -189,7 +192,7 @@ static void activityFresh(void)
 {
 	if(TimeOut == timer_expired(&(S_LunchPageBuffer->timer)))
 	{
-		startActivity(createSleepActivity, NULL);
+		startActivity(createSleepActivity, NULL, NULL);
 	}
 }
 

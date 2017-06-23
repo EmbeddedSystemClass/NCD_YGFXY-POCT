@@ -28,8 +28,8 @@ typedef struct TestData_tag {
 	Operator 		operator;							//操作人
 	char 			sampleid[MaxSampleIDLen];			//样本编号
 	QRCode 			qrCode;								//二维码信息
+	TestSeries 		testSeries;
 	AdjustData 		adjustData;							//校准数据
-	TestSeries 		testSeries;							//测试曲线
 	DateTime 		testDateTime;						//测试时间
 	Temperature 	temperature;						//测试温度
 	unsigned short 	time;								//超时时间

@@ -102,7 +102,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 				
 				S_AdjustLedPageBuffer->isTestting = true;
 				S_AdjustLedPageBuffer->testCnt = 1;
-				StartTest(&(S_AdjustLedPageBuffer->PaiduiUnitData));
+				StartTest(&(S_AdjustLedPageBuffer->PaiduiUnitData.testData));
 				
 				dspTestStatus("Testting\0");
 				
@@ -281,7 +281,7 @@ static void analysisTestData(void)
 				DspNum(0x2605, S_AdjustLedPageBuffer->testCnt, 2);
 				DspNum(0x2604, S_AdjustLedPageBuffer->PaiduiUnitData.ledLight, 2);
 					
-				StartTest(&(S_AdjustLedPageBuffer->PaiduiUnitData));
+				StartTest(&(S_AdjustLedPageBuffer->PaiduiUnitData.testData));
 				
 				return;
 			}
@@ -300,7 +300,7 @@ static void analysisTestData(void)
 				DspNum(0x2605, S_AdjustLedPageBuffer->testCnt, 2);
 				DspNum(0x2604, S_AdjustLedPageBuffer->PaiduiUnitData.ledLight, 2);
 					
-				StartTest(&(S_AdjustLedPageBuffer->PaiduiUnitData));
+				StartTest(&(S_AdjustLedPageBuffer->PaiduiUnitData.testData));
 				
 				return;
 			}

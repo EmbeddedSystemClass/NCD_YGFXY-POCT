@@ -364,7 +364,7 @@ static void CheckQRCode(void)
 			memcpy(S_AdjustPageBuffer->adjustData.ItemName, S_AdjustPageBuffer->paiduiUnitData.testData.qrCode.ItemName, ItemNameLen);
 			
 			//²âÊÔ½á¹û
-			StartTest(&(S_AdjustPageBuffer->paiduiUnitData));
+			StartTest(&(S_AdjustPageBuffer->paiduiUnitData.testData));
 		}
 	}
 }

@@ -148,7 +148,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			//创建成功
 			if(Error_OK == S_PaiDuiPageBuffer->error)
 			{
-				startActivity(createSampleActivity, NULL);
+				startActivity(createSampleActivity, NULL, NULL);
 			}
 			//排队位置满，不允许
 			else if(Error_PaiduiFull == S_PaiDuiPageBuffer->error)
@@ -238,7 +238,7 @@ static void activityFresh(void)
 						vTaskDelay(1000 / portTICK_RATE_MS);
 						//创建成功，则使电机远离，防止用户拔卡
 						MotorMoveTo(1000, 1);			
-						startActivity(createSampleActivity, NULL);		
+						startActivity(createSampleActivity, NULL, NULL);		
 						return;
 					}
 					//排队位置满，不允许

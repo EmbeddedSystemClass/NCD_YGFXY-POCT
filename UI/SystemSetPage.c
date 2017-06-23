@@ -21,6 +21,13 @@
 #include	"SystemResetFun.h"
 #include	"ErrorRecordPage.h"
 #include	"AdjustRecordPage.h"
+#include	"MaintenancePage.h"
+#include	"SelectUserPage.h"
+#include	"Maintenance_Data.h"
+#include	"MaintenanceRecordPage.h"
+#include	"QualityPage.h"
+#include	"Quality_Data.h"
+#include	"QualityRecordPage.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -65,7 +72,7 @@ MyState_TypeDef createSystemSetActivity(Activity * thizActivity, Intent * pram)
 	
 	if(My_Pass == activityBufferMalloc())
 	{
-		InitActivity(thizActivity, "SystemSetActivity\0", activityStart, activityInput, activityFresh, activityHide, activityResume, activityDestroy);
+		InitActivity(thizActivity, SystemSetActivityName, activityStart, activityInput, activityFresh, activityHide, activityResume, activityDestroy);
 		
 		return My_Pass;
 	}
@@ -107,17 +114,17 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		//基本信息
 		if(S_SysSetPageBuffer->lcdinput[0] == 0x1900)
 		{
-			startActivity(createDeviceInfoActivity, NULL);
+			startActivity(createDeviceInfoActivity, NULL, NULL);
 		}
 		//操作人管理
 		else if(S_SysSetPageBuffer->lcdinput[0] == 0x1901)
 		{
-			startActivity(createUserManagerActivity, NULL);
+			startActivity(createUserManagerActivity, NULL, NULL);
 		}
 		//网络设置
 		else if(S_SysSetPageBuffer->lcdinput[0] == 0x1902)
 		{
-			startActivity(createNetPreActivity, NULL);
+			startActivity(createNetPreActivity, NULL, NULL);
 		}
 		//数据管理
 		else if(S_SysSetPageBuffer->lcdinput[0] == 0x1903)
@@ -125,18 +132,17 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			/*数据*/
 			S_SysSetPageBuffer->lcdinput[1] = pbuf[7];
 			S_SysSetPageBuffer->lcdinput[1] = (S_SysSetPageBuffer->lcdinput[1]<<8) + pbuf[8];
-			
-			/*更换检测卡*/
+
 			if(S_SysSetPageBuffer->lcdinput[1] == 0x0001)
-				startActivity(createRecordActivity, NULL);
+				startActivity(createRecordActivity, NULL, NULL);
 			else if(S_SysSetPageBuffer->lcdinput[1] == 0x0002)
-				startActivity(createErrorRecordActivity, NULL);
+				startActivity(createErrorRecordActivity, NULL, NULL);
 			else if(S_SysSetPageBuffer->lcdinput[1] == 0x0003)
-				startActivity(createAdjustRecordActivity, NULL);
+				startActivity(createAdjustRecordActivity, NULL, NULL);
 			else if(S_SysSetPageBuffer->lcdinput[1] == 0x0004)
-				startActivity(createAdjustRecordActivity, NULL);
+				startActivity(createQualityRecordActivity, NULL, NULL);
 			else if(S_SysSetPageBuffer->lcdinput[1] == 0x0005)
-				startActivity(createAdjustRecordActivity, NULL);
+				startActivity(createMaintenanceRecordActivity, NULL, NULL);
 		}
 		//关于按键第一次按下
 		else if(S_SysSetPageBuffer->lcdinput[0] == 0x1909)
@@ -156,7 +162,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 				SendKeyCode(4);
 			//短按则进入关于界面
 			else
-				startActivity(createAboutUsActivity, NULL);
+				startActivity(createAboutUsActivity, NULL, NULL);
 		}
 		//隐藏密码的厂家功能
 		else if(S_SysSetPageBuffer->lcdinput[0] == 0x1910)
@@ -165,19 +171,19 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			{
 				if(pdPASS == CheckStrIsSame(&pbuf[7] , AdjustPassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
 				{
-					startActivity(createAdjActivity, NULL);
+					startActivity(createAdjActivity, NULL, NULL);
 				}
 				else if(pdPASS == CheckStrIsSame(&pbuf[7] , TestPassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
 				{
-					startActivity(createReTestActivity, NULL);
+					startActivity(createReTestActivity, NULL, NULL);
 				}
 				else if(pdPASS == CheckStrIsSame(&pbuf[7] , CheckQRPassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
 				{
-					startActivity(createCheckQRActivity, NULL);
+					startActivity(createCheckQRActivity, NULL, NULL);
 				}
 				else if(pdPASS == CheckStrIsSame(&pbuf[7] , AdjLedPassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
 				{
-					startActivity(createAdjustLedActivity, NULL);
+					startActivity(createAdjustLedActivity, NULL, NULL);
 				}
 				else if(pdPASS == CheckStrIsSame(&pbuf[7] , FactoryResetPassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
 				{
@@ -202,10 +208,32 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			else
 				SendKeyCode(1);
 		}
+		//质控
+		else if(S_SysSetPageBuffer->lcdinput[0] == 0x1945)
+		{
+			if(My_Pass == CreateADeviceQuality())
+			{
+				S_SysSetPageBuffer->operator = &(getGB_DeviceQuality()->operator);
+				startActivity(createSelectUserActivity, createIntent(&(S_SysSetPageBuffer->operator), 4), createQualityActivity);
+			}
+			else
+				SendKeyCode(3);
+		}
+		//维护
+		else if(S_SysSetPageBuffer->lcdinput[0] == 0x1946)
+		{
+			if(My_Pass == CreateADeviceMaintenance())
+			{
+				S_SysSetPageBuffer->operator = &(getGB_DeviceMaintenance()->operator);
+				startActivity(createSelectUserActivity, createIntent(&(S_SysSetPageBuffer->operator), 4), createMaintenanceActivity);
+			}
+			else
+				SendKeyCode(3);
+		}
 		//其他设置
 		else if(S_SysSetPageBuffer->lcdinput[0] == 0x1904)
 		{
-			startActivity(createOtherSetActivity, NULL);
+			startActivity(createOtherSetActivity, NULL, NULL);
 		}
 		//返回
 		else if(S_SysSetPageBuffer->lcdinput[0] == 0x1906)

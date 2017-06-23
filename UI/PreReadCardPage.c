@@ -303,7 +303,7 @@ static void CheckQRCode(void)
 				getAdjPram(getGBSystemSetData(), &(S_PreReadPageBuffer->currenttestdata->testData.adjustData));
 				
 				S_PreReadPageBuffer->preTestErrorCount = 0;
-				StartTest(S_PreReadPageBuffer->currenttestdata);
+				StartTest(&(S_PreReadPageBuffer->currenttestdata->testData));
 			}
 			else
 			{
@@ -311,7 +311,7 @@ static void CheckQRCode(void)
 				if((pdPASS == CheckStrIsSame(S_PreReadPageBuffer->currenttestdata->testData.qrCode.PiHao, S_PreReadPageBuffer->temperweima.PiHao, 15)) &&
 					(pdPASS == CheckStrIsSame(S_PreReadPageBuffer->currenttestdata->testData.qrCode.piNum, S_PreReadPageBuffer->temperweima.piNum, 5)))
 				{
-					startActivity(createTimeDownActivity, NULL);
+					startActivity(createTimeDownActivity, NULL, NULL);
 				}
 				//ÊÔ¼Á¿¨±ä¸ü
 				else
@@ -346,7 +346,7 @@ static void CheckPreTestCard(void)
 			S_PreReadPageBuffer->preTestErrorCount++;
 			if(S_PreReadPageBuffer->preTestErrorCount < 8)
 			{	
-				StartTest(S_PreReadPageBuffer->currenttestdata);
+				StartTest(&(S_PreReadPageBuffer->currenttestdata->testData));
 			}
 			else
 			{
@@ -370,11 +370,11 @@ static void CheckPreTestCard(void)
 				
 				S_PreReadPageBuffer->currenttestdata->statues = status_start;
 
-				startActivity(createPaiDuiActivity, NULL);
+				startActivity(createPaiDuiActivity, NULL, NULL);
 			}
 			else
 			{		
-				startActivity(createTimeDownActivity, NULL);
+				startActivity(createTimeDownActivity, NULL, NULL);
 			}
 		}
 		

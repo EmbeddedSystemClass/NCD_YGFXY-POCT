@@ -3,12 +3,12 @@
 #define	_TEST_T_H
 
 #include	"Define.h"
-
+#include	"TestData.h"
 
 
 char StartvTestTask(void);
 
-MyState_TypeDef StartTest(void * parm);
+MyState_TypeDef StartTest(TestData * parm);
 
 MyState_TypeDef TakeTestResult(ResultState *testsult);
 

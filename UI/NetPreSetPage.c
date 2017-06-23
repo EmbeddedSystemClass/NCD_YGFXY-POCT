@@ -108,22 +108,22 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		/*有线网设置*/
 		else if(S_NetPrePageBuffer->lcdinput[0] == 0x1E01)
 		{
-			startActivity(createNetSetActivity, NULL);
+			startActivity(createNetSetActivity, NULL, NULL);
 		}
 		/*wifi设置*/
 		else if(S_NetPrePageBuffer->lcdinput[0] == 0x1E02)
 		{
-			startActivity(createWifiSetActivity, NULL);
+			startActivity(createWifiSetActivity, NULL, NULL);
 		}
 		//服务器设置
 		else if(S_NetPrePageBuffer->lcdinput[0] == 0x1FA0)
 		{
-			startActivity(createServerSetActivity, NULL);
+			startActivity(createServerSetActivity, NULL, NULL);
 		}
 		//查看网络信息
 		else if(S_NetPrePageBuffer->lcdinput[0] == 0x1E03)
 		{
-			startActivity(createNetInfoActivity, NULL);
+			startActivity(createNetInfoActivity, NULL, NULL);
 		}
 	}
 }

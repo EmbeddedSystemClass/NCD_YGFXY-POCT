@@ -86,9 +86,6 @@ CreateTestErrorType CreateANewTest(TestType testtype)
 			memset(GB_TestBuffer.CurrentTestDataBuffer, 0, sizeof(PaiduiUnitData));
 			GB_TestBuffer.NormalTestDataBuffer->testlocation = 0;
 			
-			//从系统设置数据中获取测试时led的亮度值
-			GB_TestBuffer.NormalTestDataBuffer->ledLight = getGBSystemSetData()->testLedLightIntensity;
-			
 			return Error_OK;
 		}
 	}
@@ -121,9 +118,7 @@ CreateTestErrorType CreateANewTest(TestType testtype)
 					
 					//复制排队共用操作人到当前测试数据中，如果是第一次创建排队，后面选择操作人则会覆盖此次操作
 					memcpy(&(GB_TestBuffer.CurrentTestDataBuffer->testData.operator), &(GB_TestBuffer.PaiduiUser), OneOperatorStructSize);
-					
-					//从系统设置数据中获取测试时led的亮度值
-					GB_TestBuffer.CurrentTestDataBuffer->ledLight = getGBSystemSetData()->testLedLightIntensity;
+
 					//进入获取操作人状态
 					GB_TestBuffer.CurrentTestDataBuffer->statues = status_user;
 					

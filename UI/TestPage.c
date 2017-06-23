@@ -100,7 +100,7 @@ static void activityStart(void)
 		//必须在获取当前测试数据地址后使用
 		InitPageText();
 		
-		StartTest(S_TestPageBuffer->currenttestdata);
+		StartTest(&(S_TestPageBuffer->currenttestdata->testData));
 	}
 	
 	SelectPage(96);
@@ -137,7 +137,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 					backToActivity(lunchActivityName);
 					
 					if(IsPaiDuiTestting())
-						startActivity(createPaiDuiActivity, NULL);					
+						startActivity(createPaiDuiActivity, NULL, NULL);					
 				}
 				//正在测试不允许退出
 				else
@@ -148,7 +148,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 				backToActivity(lunchActivityName);
 				
 				if(IsPaiDuiTestting())
-					startActivity(createPaiDuiActivity, NULL);
+					startActivity(createPaiDuiActivity, NULL, NULL);
 			}
 		}
 		/*打印数据*/
@@ -188,7 +188,7 @@ static void activityFresh(void)
 				backToActivity(lunchActivityName);
 				
 				if(IsPaiDuiTestting())
-					startActivity(createPaiDuiActivity, NULL);
+					startActivity(createPaiDuiActivity, NULL, NULL);
 			}
 		}
 	}

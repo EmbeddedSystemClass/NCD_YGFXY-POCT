@@ -364,7 +364,6 @@ static void deviceAdjustSelf(void)
 static void deviceErrorTest(void)
 {
 	DeviceError * deviceError = NULL;
-	double a,b;
 	
 	deviceError = MyMalloc(DeviceErrorStructSize);
 	

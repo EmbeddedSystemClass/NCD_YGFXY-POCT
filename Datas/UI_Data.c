@@ -46,7 +46,9 @@ static LinkStack GB_ActivityLinkStack;
 *Author: xsx
 *Date: 2016年12月20日11:16:59
 ***************************************************************************************************/
-MyState_TypeDef startActivity(MyState_TypeDef (* pageCreate)(Activity * thizactivity, Intent * pram), Intent * pram)
+MyState_TypeDef startActivity(MyState_TypeDef (* pageCreate)(Activity * thizactivity, Intent * pram), Intent * pram,
+	MyState_TypeDef (* childPageCreate)(Activity * thizactivity, Intent * pram)
+)
 {
 	Activity * activity = NULL;
 	
@@ -54,13 +56,14 @@ MyState_TypeDef startActivity(MyState_TypeDef (* pageCreate)(Activity * thizacti
 		return My_Fail;
 	
 	//为新页面申请内存
-	activity = MyMalloc(sizeof(Activity));
+	activity = MyMalloc(ActivityStructSize);
 	
 	if(activity)
 	{
-		memset(activity, 0, sizeof(Activity));
+		memset(activity, 0, ActivityStructSize);
 		
 		activity->pageCreate = (MyState_TypeDef (*)(void * thizactivity, Intent * pram))pageCreate;
+		activity->childPageCreate = (MyState_TypeDef (*)(void * thizactivity, Intent * pram))childPageCreate;
 		
 		//新页面入栈
 		if(My_Pass == StackPush(&GB_ActivityLinkStack, activity))
@@ -114,6 +117,26 @@ MyState_TypeDef backToActivity(char * pageName)
 		else
 			StackPop(&GB_ActivityLinkStack, false);
 	}
+	
+	return My_Fail;
+}
+
+/***************************************************************************************************
+*FunctionName:  gotoChildActivity
+*Description:  前往子页面
+*Input:  pram -- 传入子页面的参数
+		childPageCreate -- 指定子页面的子页面
+*Output:  
+*Return:  
+*Author:  xsx
+*Date: 2017年6月14日 14:59:16
+***************************************************************************************************/
+MyState_TypeDef gotoChildActivity(Intent * pram,
+	MyState_TypeDef (* childPageCreate)(Activity * thizactivity, Intent * pram))
+{
+	if((GB_ActivityLinkStack.top) && (GB_ActivityLinkStack.top->activity) && (GB_ActivityLinkStack.top->activity->childPageCreate))
+		return startActivity((MyState_TypeDef (*)(Activity * thizactivity, Intent * pram))GB_ActivityLinkStack.top->activity->childPageCreate, 
+			pram, childPageCreate);
 	
 	return My_Fail;
 }

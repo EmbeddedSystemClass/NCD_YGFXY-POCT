@@ -872,6 +872,31 @@
               <FileType>1</FileType>
               <FilePath>..\UI\AdjustRecordPage.c</FilePath>
             </File>
+            <File>
+              <FileName>MaintenancePage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\MaintenancePage.c</FilePath>
+            </File>
+            <File>
+              <FileName>MaintenanceRecordPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\MaintenanceRecordPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>QualityPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\QualityPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>QualityRecordPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\QualityRecordPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>QualityDetailPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\QualityDetailPage.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -952,6 +977,16 @@
               <FileType>5</FileType>
               <FilePath>..\Entity\DeviceError.h</FilePath>
             </File>
+            <File>
+              <FileName>DeviceMaintenance.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\DeviceMaintenance.h</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceQuality.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\DeviceQuality.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -991,6 +1026,16 @@
               <FileName>ItemConst_Data.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Datas\ItemConst_Data.c</FilePath>
+            </File>
+            <File>
+              <FileName>Maintenance_Data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Datas\Maintenance_Data.c</FilePath>
+            </File>
+            <File>
+              <FileName>Quality_Data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Datas\Quality_Data.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1036,6 +1081,16 @@
               <FileName>DeviceErrorDao.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Daos\DeviceErrorDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceMaintenanceDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceMaintenanceDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceQualityDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceQualityDao.c</FilePath>
             </File>
           </Files>
         </Group>

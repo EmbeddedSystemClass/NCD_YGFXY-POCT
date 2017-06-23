@@ -11,10 +11,14 @@
 #include	"HttpClient_Fun.h"
 #include	"RTC_Driver.h"
 #include	"DeviceDao.h"
-#include	"DeviceAdjust.h"
 #include	"DeviceError.h"
 #include	"DeviceErrorDao.h"
+#include	"DeviceAdjust.h"
 #include	"DeviceAdjustDao.h"
+#include	"DeviceMaintenance.h"
+#include	"DeviceMaintenanceDao.h"
+#include	"DeviceQuality.h"
+#include	"DeviceQualityDao.h"
 
 #include	"MyMem.h"
 #include	"CRC16.h"
@@ -41,6 +45,8 @@ static void queryDeviceInfo(void);
 static void upLoadDeviceAdjustRecord(void);
 static void upLoadYGFXYDataRecord(void);
 static void upLoadDeviceErrorRecord(void);
+static void upLoadDeviceMaintenanceRecord(void);
+static void upLoadDeviceQualityRecord(void);
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************正文********************************************************/
@@ -65,6 +71,12 @@ void UpLoadFunction(void)
 			
 			vTaskDelay(2000 / portTICK_RATE_MS);
 			upLoadDeviceErrorRecord();
+			
+			vTaskDelay(2000 / portTICK_RATE_MS);
+			upLoadDeviceMaintenanceRecord();
+			
+			vTaskDelay(2000 / portTICK_RATE_MS);
+			upLoadDeviceQualityRecord();
 		}
 		
 		vTaskDelay(60000 / portTICK_RATE_MS);
@@ -133,7 +145,7 @@ static void queryDeviceInfo(void)
 		memcpy(&(httpClientBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
 		
 		//组合请求参数
-		sprintf(httpClientBuffer->tempBuffer, "deviceId=%s\0", httpClientBuffer->systemSetData.deviceId);
+		snprintf(httpClientBuffer->tempBuffer, 50, "deviceId=%s", httpClientBuffer->systemSetData.deviceId);
 		sprintf(httpClientBuffer->httpPostBuffer.sendBuf, "POST /NCDPOCT_Server/%s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length: %d\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\n%s\0",
 			QueryDeviceByDeviceIdUrl, httpClientBuffer->systemSetData.serverSet.serverIP.ip_1, httpClientBuffer->systemSetData.serverSet.serverIP.ip_2,
 			httpClientBuffer->systemSetData.serverSet.serverIP.ip_3, httpClientBuffer->systemSetData.serverSet.serverIP.ip_4,
@@ -195,7 +207,7 @@ static void upLoadDeviceAdjustRecord(void)
 			if(deviceAdjustReadPackge->deviceAdjust[0].crc == CalModbusCRC16Fun1(&(deviceAdjustReadPackge->deviceAdjust[0]), DeviceAdjustStructCrcSize))
 			{
 				//组合请求参数
-				sprintf(httpClientBuffer->tempBuffer, "normalv=%.2f&measurev=%.2f&testtime=20%02d-%02d-%02d %02d:%02d:%02d&device.did=%s&result=Success&dsc=Device Automatic Adjust\0", 
+				snprintf(httpClientBuffer->tempBuffer, 500, "normalv=%.2f&measurev=%.2f&testtime=20%02d-%02d-%02d %02d:%02d:%02d&device.did=%s&result=Success&dsc=Device Automatic Adjust", 
 					deviceAdjustReadPackge->deviceAdjust[0].normalv, deviceAdjustReadPackge->deviceAdjust[0].measurev, deviceAdjustReadPackge->deviceAdjust[0].dateTime.year,
 					deviceAdjustReadPackge->deviceAdjust[0].dateTime.month, deviceAdjustReadPackge->deviceAdjust[0].dateTime.day, deviceAdjustReadPackge->deviceAdjust[0].dateTime.hour,
 					deviceAdjustReadPackge->deviceAdjust[0].dateTime.min, deviceAdjustReadPackge->deviceAdjust[0].dateTime.sec,
@@ -360,3 +372,140 @@ static void upLoadDeviceErrorRecord(void)
 	MyFree(deviceErrorReadPackge);
 }
 
+/***************************************************************************************************
+*FunctionName:  upLoadDeviceMaintenanceRecord
+*Description:  上传设备维护记录
+*Input:  
+*Output:  
+*Return:  
+*Author:  xsx
+*Date: 2017年6月16日 11:09:29
+***************************************************************************************************/
+static void upLoadDeviceMaintenanceRecord(void)
+{
+	HttpClientBuffer * httpClientBuffer = NULL;
+	DeviceMaintenanceReadPackge * deviceReadPackge = NULL;
+	
+	httpClientBuffer = MyMalloc(httpClientBufferStructSize);
+	deviceReadPackge = MyMalloc(DeviceMaintenanceReadPackgeStructSize);
+	
+	if(httpClientBuffer && deviceReadPackge)
+	{
+		memcpy(&(httpClientBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
+		
+		//读取校准记录以及头信息
+		memset(&(deviceReadPackge->pageRequest), 0, PageRequestStructSize);					//清除请求pagerequest表明按照上传索引来读取
+		if(My_Pass == readDeviceMaintenanceFromFile(deviceReadPackge))
+		{
+			if(deviceReadPackge->deviceMaintenance[0].crc == CalModbusCRC16Fun1(&(deviceReadPackge->deviceMaintenance[0]), DeviceMaintenanceStructCrcSize))
+			{
+				//组合请求参数
+				snprintf(httpClientBuffer->tempBuffer, 1024, "testtime=20%02d-%02d-%02d %02d:%02d:%02d&device.did=%s&operator.name=%s&dsc=%s&", 
+					deviceReadPackge->deviceMaintenance[0].dateTime.year, deviceReadPackge->deviceMaintenance[0].dateTime.month, 
+					deviceReadPackge->deviceMaintenance[0].dateTime.day, deviceReadPackge->deviceMaintenance[0].dateTime.hour,
+					deviceReadPackge->deviceMaintenance[0].dateTime.min, deviceReadPackge->deviceMaintenance[0].dateTime.sec,
+					httpClientBuffer->systemSetData.deviceId, deviceReadPackge->deviceMaintenance[0].operator.name,
+					deviceReadPackge->deviceMaintenance[0].desc);
+				
+				if(deviceReadPackge->deviceMaintenance[0].isOk)
+					strcat(httpClientBuffer->tempBuffer, "result=true\0");
+				else
+					strcat(httpClientBuffer->tempBuffer, "result=false\0");
+				
+				sprintf(httpClientBuffer->httpPostBuffer.sendBuf, "POST /NCDPOCT_Server/%s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length: %d\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\n%s\0",
+					UpLoadDeviceMaintenanceUrl, httpClientBuffer->systemSetData.serverSet.serverIP.ip_1, httpClientBuffer->systemSetData.serverSet.serverIP.ip_2,
+					httpClientBuffer->systemSetData.serverSet.serverIP.ip_3, httpClientBuffer->systemSetData.serverSet.serverIP.ip_4,
+					httpClientBuffer->systemSetData.serverSet.serverPort, strlen(httpClientBuffer->tempBuffer), httpClientBuffer->tempBuffer);
+				httpClientBuffer->httpPostBuffer.sendBufferLen = strlen(httpClientBuffer->httpPostBuffer.sendBuf);
+				
+				IP4_ADDR(&(httpClientBuffer->httpPostBuffer.server_ip), httpClientBuffer->systemSetData.serverSet.serverIP.ip_1, httpClientBuffer->systemSetData.serverSet.serverIP.ip_2,
+					httpClientBuffer->systemSetData.serverSet.serverIP.ip_3, httpClientBuffer->systemSetData.serverSet.serverIP.ip_4);
+				httpClientBuffer->httpPostBuffer.server_port = httpClientBuffer->systemSetData.serverSet.serverPort;
+				
+				if(My_Pass == PostData(&(httpClientBuffer->httpPostBuffer)))
+				{
+					plusDeviceMaintenanceHeaderUpLoadIndexToFile(1);
+				}
+			}
+		}
+	}
+	
+	MyFree(httpClientBuffer);
+	MyFree(deviceReadPackge);
+}
+
+/***************************************************************************************************
+*FunctionName:  upLoadDeviceQualityRecord
+*Description:  上传质控记录
+*Input:  
+*Output:  
+*Return:  
+*Author:  xsx
+*Date: 2017年6月16日 13:58:22
+***************************************************************************************************/
+static void upLoadDeviceQualityRecord(void)
+{
+	HttpClientBuffer * httpClientBuffer = NULL;
+	DeviceQualityReadPackge * deviceReadPackge = NULL;
+	unsigned char i=0;
+	
+	httpClientBuffer = MyMalloc(httpClientBufferStructSize);
+	deviceReadPackge = MyMalloc(DeviceQualityReadPackgeStructSize);
+	
+	if(httpClientBuffer && deviceReadPackge)
+	{
+		memcpy(&(httpClientBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
+		
+		//读取校准记录以及头信息
+		memset(&(deviceReadPackge->pageRequest), 0, PageRequestStructSize);					//清除请求pagerequest表明按照上传索引来读取
+		if(My_Pass == readDeviceQualityFromFile(deviceReadPackge))
+		{
+			if(deviceReadPackge->deviceQuality[0].crc == CalModbusCRC16Fun1(&(deviceReadPackge->deviceQuality[0]), DeviceQualityStructCrcSize))
+			{
+				//组合请求参数
+				snprintf(httpClientBuffer->tempBuffer, 1024, "normalv=%.2f&testtime=20%02d-%02d-%02d %02d:%02d:%02d&device.did=%s&operator.name=%s&item.code=%s&dsc=%s&", 
+					deviceReadPackge->deviceQuality[0].standardValue, deviceReadPackge->deviceQuality[0].dateTime.year, deviceReadPackge->deviceQuality[0].dateTime.month, 
+					deviceReadPackge->deviceQuality[0].dateTime.day, deviceReadPackge->deviceQuality[0].dateTime.hour,
+					deviceReadPackge->deviceQuality[0].dateTime.min, deviceReadPackge->deviceQuality[0].dateTime.sec,
+					httpClientBuffer->systemSetData.deviceId, deviceReadPackge->deviceQuality[0].operator.name,
+					deviceReadPackge->deviceQuality[0].itemName, deviceReadPackge->deviceQuality[0].desc);
+				
+				if(deviceReadPackge->deviceQuality[0].isOk)
+					strcat(httpClientBuffer->tempBuffer, "result=true&\0");
+				else
+					strcat(httpClientBuffer->tempBuffer, "result=false&\0");
+				
+				strcat(httpClientBuffer->tempBuffer, "measurev=[\0");
+				for(i=0; i<DeviceQualityMaxTestCount; i++)
+				{
+					if(deviceReadPackge->deviceQuality[0].testValue[i] != 0.0)
+					{
+						snprintf(httpClientBuffer->tempbuf2, 15, "%.3f,", deviceReadPackge->deviceQuality[0].testValue[i]);
+
+						strcat(httpClientBuffer->tempBuffer, httpClientBuffer->tempbuf2);
+					}
+				}
+				httpClientBuffer->tempBuffer[strlen(httpClientBuffer->tempBuffer)-1] = 0;
+				strcat(httpClientBuffer->tempBuffer, "]\0");
+				
+				sprintf(httpClientBuffer->httpPostBuffer.sendBuf, "POST /NCDPOCT_Server/%s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length: %d\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\n%s\0",
+					UpLoadDeviceQualityUrl, httpClientBuffer->systemSetData.serverSet.serverIP.ip_1, httpClientBuffer->systemSetData.serverSet.serverIP.ip_2,
+					httpClientBuffer->systemSetData.serverSet.serverIP.ip_3, httpClientBuffer->systemSetData.serverSet.serverIP.ip_4,
+					httpClientBuffer->systemSetData.serverSet.serverPort, strlen(httpClientBuffer->tempBuffer), httpClientBuffer->tempBuffer);
+				httpClientBuffer->httpPostBuffer.sendBufferLen = strlen(httpClientBuffer->httpPostBuffer.sendBuf);
+				
+				IP4_ADDR(&(httpClientBuffer->httpPostBuffer.server_ip), httpClientBuffer->systemSetData.serverSet.serverIP.ip_1, httpClientBuffer->systemSetData.serverSet.serverIP.ip_2,
+					httpClientBuffer->systemSetData.serverSet.serverIP.ip_3, httpClientBuffer->systemSetData.serverSet.serverIP.ip_4);
+				httpClientBuffer->httpPostBuffer.server_port = httpClientBuffer->systemSetData.serverSet.serverPort;
+				
+				if(My_Pass == PostData(&(httpClientBuffer->httpPostBuffer)))
+				{
+					plusDeviceQualityHeaderUpLoadIndexToFile(1);
+				}
+			}
+		}
+	}
+	
+	MyFree(httpClientBuffer);
+	MyFree(deviceReadPackge);
+}

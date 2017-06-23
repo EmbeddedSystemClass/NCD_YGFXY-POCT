@@ -9,16 +9,16 @@
 
 typedef struct Activity_Tag
 {
-	char * pageName;												//activity名字，指向一个唯一地址
+	char * pageName;																	//activity名字，指向一个唯一地址
 	MyState_TypeDef (* pageCreate)(void * thizactivity, Intent * pram);					//配置每个页面具体的函数，申请页面内存
-	void (* pageStart)(void);										//显示页面，初始化页面数据
-	void (* pageInput)(unsigned char *pbuf , unsigned short len);		//获取页面输入
-	void (* pageFresh)(void);											//页面刷新
-	void (* pageHide)(void);											//页面隐藏，切换到子页面
-	void (* pageResume)(void);											//从隐藏状态返回，重新显示
-	void (* pageDestroy)(void);										//页面销毁，显示上一个页面
-	
-	Intent * pram;													//上一个页面传进来的参数地址，读取完需要释放
+	void (* pageStart)(void);															//显示页面，初始化页面数据
+	void (* pageInput)(unsigned char *pbuf , unsigned short len);						//获取页面输入
+	void (* pageFresh)(void);															//页面刷新
+	void (* pageHide)(void);															//页面隐藏，切换到子页面
+	void (* pageResume)(void);															//从隐藏状态返回，重新显示
+	void (* pageDestroy)(void);															//页面销毁，显示上一个页面
+	Intent * pram;																		//上一个页面传进来的参数地址，读取完需要释放
+	MyState_TypeDef (* childPageCreate)(void * thizactivity, Intent * pram);			//子页面创建函数指针
 }Activity;
 
 
@@ -34,6 +34,8 @@ typedef struct
 	StackNode * top;										//栈顶节点
 }LinkStack;
 
+
+#define ActivityStructSize	sizeof(Activity)
 
 void InitLinkStack(LinkStack * linkStack);
 MyState_TypeDef StackPush(LinkStack * linkStack, Activity * nodeData);

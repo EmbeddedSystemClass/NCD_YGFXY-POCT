@@ -117,7 +117,7 @@ static void activityFresh(void)
 		RefreshTimeText();
 		if(TimeOut == timer_expired(S_TimeDownPageData->S_Timer))
 		{
-			startActivity(createTestActivity, NULL);
+			startActivity(createTestActivity, NULL, NULL);
 		}
 	}
 	

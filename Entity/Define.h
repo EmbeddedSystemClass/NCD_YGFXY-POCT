@@ -40,12 +40,16 @@
 #define	UpLoadDeviceAdjustUrl		"UpLoadDeviceAdjust\0"
 #define	UpLoadDeviceErrorUrl		"UpLoadDeviceError\0"
 #define	UpLoadYGFXYDataUrl			"upLoadYGFXY_Data\0"
+#define	UpLoadDeviceMaintenanceUrl	"UpLoadDeviceMaintenance\0"
+#define	UpLoadDeviceQualityUrl		"UpLoadDeviceQuality\0"
 
 
 /*SD卡文件名*/
 #define	TestDataFileName			"0:/TD.ncd\0"
 #define	DeviceAdjustFileName		"0:/Dadj.ncd\0"
 #define	DeviceErrorFileName			"0:/Derr.ncd\0"
+#define	DeviceMainenanceFileName	"0:/Dmai.ncd\0"
+#define	DeviceQualityFileName		"0:/Dqua.ncd\0"
 
 /**********************************************************************************************************/
 /******************************************操作结果变量*************************************************/

@@ -147,7 +147,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			{
 				S_RecordPageBuffer->selectindex = S_RecordPageBuffer->tempvalue1;
 				BasicPic(0x2020, 1, 137, 11, 142, 940, 179, 38, 149+(S_RecordPageBuffer->selectindex - 1)*40);
-				startActivity(createShowResultActivity, createIntent(&(S_RecordPageBuffer->testDataRecordReadPackage.testData[S_RecordPageBuffer->testDataRecordReadPackage.readTotalNum - S_RecordPageBuffer->selectindex]), TestDataStructSize));
+				startActivity(createShowResultActivity, createIntent(&(S_RecordPageBuffer->testDataRecordReadPackage.testData[S_RecordPageBuffer->testDataRecordReadPackage.readTotalNum - S_RecordPageBuffer->selectindex]), TestDataStructSize), NULL);
 			}
 		}
 		//ฬ๘าณ

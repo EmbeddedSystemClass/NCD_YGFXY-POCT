@@ -137,7 +137,7 @@ static void activityFresh(void)
 	{
 		stopPlay();
 		S_WaitPageData->currenttestdata->statues = status_preread;
-		startActivity(createPreReadCardActivity, NULL);
+		startActivity(createPreReadCardActivity, NULL, NULL);
 		return;
 	}
 	/*时间到，未插卡，返回*/

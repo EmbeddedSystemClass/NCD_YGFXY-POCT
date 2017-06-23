@@ -119,7 +119,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			S_ShowDeviceInfoPageBuffer->tempValue = GetBufLen(&pbuf[7] , 2*pbuf[6]);
 			if((S_ShowDeviceInfoPageBuffer->tempValue == 6) && ( pdPASS == CheckStrIsSame(&pbuf[7], AdminPassWord, 6)))
 			{
-				startActivity(createSetDeviceIDActivity, NULL);
+				startActivity(createSetDeviceIDActivity, NULL, NULL);
 			}
 			else
 				SendKeyCode(1);
