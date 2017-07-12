@@ -353,7 +353,7 @@ static unsigned char HEX2BCD(unsigned char hex_data)
 *Author: xsx
 *Date: 2016Äê9ÔÂ18ÈÕ16:11:52
 ***************************************************************************************************/
-MyState_TypeDef RTC_SetTimeData(DateTime * data)
+MyRes RTC_SetTimeData(DateTime * data)
 {
 	unsigned char buf[7];
 	
@@ -374,11 +374,11 @@ MyState_TypeDef RTC_SetTimeData(DateTime * data)
 		return My_Pass;
 }
 
-MyState_TypeDef RTC_SetTimeData2(char * buf)
+MyRes RTC_SetTimeData2(char * buf)
 {
 	unsigned short temp = 0;
 	DateTime temptime;
-	MyState_TypeDef status = My_Fail;
+	MyRes status = My_Fail;
 	
 	char * tempbuf = NULL;
 	
@@ -442,7 +442,7 @@ MyState_TypeDef RTC_SetTimeData2(char * buf)
 		return status;
 }
 
-MyState_TypeDef RTC_GetTimeData(DateTime * time)
+MyRes RTC_GetTimeData(DateTime * time)
 {
 	unsigned char buf[7];
 	unsigned char tempV = 0;

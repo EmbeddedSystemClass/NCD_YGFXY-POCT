@@ -16,7 +16,7 @@ typedef struct CheckQRPageBuffer_tag {
 }CheckQRPageBuffer;
 
 
-MyState_TypeDef createCheckQRActivity(Activity * thizActivity, Intent * pram);
+MyRes createCheckQRActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

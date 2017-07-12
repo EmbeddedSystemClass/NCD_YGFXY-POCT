@@ -24,7 +24,7 @@ typedef struct PaiDuiPageBuffer_tag {
 }PaiDuiPageBuffer;
 
 
-MyState_TypeDef createPaiDuiActivity(Activity * thizActivity, Intent * pram);
+MyRes createPaiDuiActivity(Activity * thizActivity, Intent * pram);
 
 
 #endif

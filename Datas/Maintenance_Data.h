@@ -4,7 +4,7 @@
 #include	"Define.h"
 #include	"DeviceMaintenance.h"
 
-MyState_TypeDef CreateADeviceMaintenance(void);
+MyRes CreateADeviceMaintenance(void);
 DeviceMaintenance * getGB_DeviceMaintenance(void);
 void deleteGB_DeviceMaintenance(void);
 

@@ -13,7 +13,7 @@ typedef struct ShowPageBuffer_tag {
 	unsigned short lcdinput[100];
 }ShowPageBuffer;
 
-MyState_TypeDef createShowResultActivity(Activity * thizActivity, Intent * pram);
+MyRes createShowResultActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

@@ -17,7 +17,7 @@ typedef struct WifiPageBuffer_tag {
 	char buf[100];
 }WifiPageBuffer;
 
-MyState_TypeDef createWifiSetActivity(Activity * thizActivity, Intent * pram);
+MyRes createWifiSetActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

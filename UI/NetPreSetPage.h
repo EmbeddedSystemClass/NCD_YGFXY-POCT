@@ -9,7 +9,7 @@ typedef struct NetPrePageBuffer_tag {
 }NetPrePageBuffer;
 
 
-MyState_TypeDef createNetPreActivity(Activity * thizActivity, Intent * pram);
+MyRes createNetPreActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

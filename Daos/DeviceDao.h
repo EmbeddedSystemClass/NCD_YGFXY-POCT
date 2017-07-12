@@ -5,10 +5,12 @@
 #include	"Define.h"
 #include	"Operator.h"
 #include	"Device.h"
+#include	"MyLock.h"
 
-MyState_TypeDef SaveDeviceToFile(Device * device);
-MyState_TypeDef ReadDeviceFromFile(Device * device);
-MyState_TypeDef deleteDeviceFile(void);
+MyRes SaveDeviceToFile(Device * device);
+MyRes ReadDeviceFromFile(Device * device);
+MyRes deleteDeviceFile(void);
+MyLock * getMyDeviceLock(void);
 
 #endif
 

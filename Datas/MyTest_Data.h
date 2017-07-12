@@ -27,7 +27,7 @@ typedef struct TestBuffer_tag{
 
 bool IsPaiDuiTestting(void);
 CreateTestErrorType CreateANewTest(TestType testtype);
-MyState_TypeDef DeleteCurrentTest(void);
+MyRes DeleteCurrentTest(void);
 PaiduiUnitData * GetTestItemByIndex(unsigned char index);
 unsigned short GetMinWaitTime(void);
 bool isSomePaiduiInOutTimeStatus(void);

@@ -8,10 +8,11 @@
 
 
 
-MyState_TypeDef writeTestDataToFile(TestData * testData);
-MyState_TypeDef readTestDataFromFile(TestDataRecordReadPackage * testDataRecordReadPackage);
-MyState_TypeDef plusTestDataHeaderUpLoadIndexToFile(unsigned int index);
-MyState_TypeDef deleteTestDataFile(void);
+MyRes writeTestDataToFile(TestData * testData);
+MyRes readTestDataFromFile(PageRequest * pageRequest, DeviceRecordHeader * deviceRecordHeader, 
+	void * recordData1, void * recordData2);
+MyRes plusTestDataHeaderuserUpLoadIndexToFile(unsigned char userIndexPlusNum, unsigned char ncdIndexPlusNum);
+MyRes deleteTestDataFile(void);
 
 #endif
 

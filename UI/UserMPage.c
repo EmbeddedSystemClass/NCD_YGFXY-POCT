@@ -19,7 +19,7 @@
 
 /******************************************************************************************/
 /*****************************************局部变量声明*************************************/
-static UserMPageBuffer * S_UserMPageBuffer = NULL;
+static UserMPageBuffer * page = NULL;
 
 /******************************************************************************************/
 /*****************************************局部函数声明*************************************/
@@ -29,11 +29,14 @@ static void activityFresh(void);
 static void activityHide(void);
 static void activityResume(void);
 static void activityDestroy(void);
-static MyState_TypeDef activityBufferMalloc(void);
+static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
-static void ShowList(void);
-static void ShowDetail(void);
+static void showCurrentPageList(void);
+static void clearPageList(void);
+static void showCurrentOperatorInfo(void);
+static void deleteCurrentOperator(void);
+static MyRes addOrModifyOperator(void);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -50,7 +53,7 @@ static void ShowDetail(void);
 *Author: xsx
 *Date: 2016年12月21日09:00:09
 ***************************************************************************************************/
-MyState_TypeDef createUserManagerActivity(Activity * thizActivity, Intent * pram)
+MyRes createUserManagerActivity(Activity * thizActivity, Intent * pram)
 {
 	if(NULL == thizActivity)
 		return My_Fail;
@@ -76,17 +79,12 @@ MyState_TypeDef createUserManagerActivity(Activity * thizActivity, Intent * pram
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_UserMPageBuffer)
-	{
-		/*读取所有操作人*/
-		ReadDeviceFromFile(&(S_UserMPageBuffer->device));
-		
-		S_UserMPageBuffer->pageindex = 1;
-		S_UserMPageBuffer->selectindex = 0;
-		
-		ShowList();
-		ShowDetail();
-	}
+	page->myDeviceLock = getMyDeviceLock();
+	page->isLocked = false;
+	timer_set(&(page->timer), 1);
+	
+	clearPageList();
+	
 	SelectPage(106);
 }
 
@@ -101,60 +99,104 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(S_UserMPageBuffer)
+	/*命令*/
+	page->lcdinput[0] = pbuf[4];
+	page->lcdinput[0] = (page->lcdinput[0]<<8) + pbuf[5];
+		
+	/*返回*/
+	if(page->lcdinput[0] == 0x1d00)
 	{
-		/*命令*/
-		S_UserMPageBuffer->lcdinput[0] = pbuf[4];
-		S_UserMPageBuffer->lcdinput[0] = (S_UserMPageBuffer->lcdinput[0]<<8) + pbuf[5];
+		backToFatherActivity();
+	}
 		
-		/*返回*/
-		if(S_UserMPageBuffer->lcdinput[0] == 0x1d00)
+	/*上翻也*/
+	else if(page->lcdinput[0] == 0x1d03)
+	{
+		if(page->isLocked && page->pageindex > 0)
 		{
-			backToFatherActivity();
-		}
-		
-		/*上翻也*/
-		else if(S_UserMPageBuffer->lcdinput[0] == 0x1d03)
-		{
-			if(S_UserMPageBuffer->pageindex > 1)
-			{
-				S_UserMPageBuffer->pageindex--;
-					
-				S_UserMPageBuffer->selectindex = 0;
-					
-				ShowList();
-				ShowDetail();
-			}
-		}
-		/*下翻页*/
-		else if(S_UserMPageBuffer->lcdinput[0] == 0x1d04)
-		{
-			if(S_UserMPageBuffer->pageindex < (MaxOperatorSize / MaxPageShowOperatorSize))
-			{
-				S_UserMPageBuffer->tempuser = &S_UserMPageBuffer->device.operators[(S_UserMPageBuffer->pageindex)*MaxPageShowOperatorSize];
-			
-				if(S_UserMPageBuffer->tempuser->crc == CalModbusCRC16Fun1(S_UserMPageBuffer->tempuser, OneOperatorStructSizeWithOutCrc))
-				{
-					S_UserMPageBuffer->pageindex++;
-					
-					S_UserMPageBuffer->selectindex = 0;
+			page->pageindex--;
 
-					ShowList();
-					ShowDetail();
-				}
-			}
+			showCurrentPageList();
 		}
-		/*选择操作人*/
-		else if((S_UserMPageBuffer->lcdinput[0] >= 0x1d07)&&(S_UserMPageBuffer->lcdinput[0] <= 0x1d0B))
+	}
+	/*下翻页*/
+	else if(page->lcdinput[0] == 0x1d04)
+	{
+		if(page->isLocked && ((page->pageindex+1) < MaxOperatorPageSize))
 		{
-			S_UserMPageBuffer->tempuser = &S_UserMPageBuffer->device.operators[(S_UserMPageBuffer->pageindex - 1)*MaxPageShowOperatorSize + S_UserMPageBuffer->lcdinput[0] - 0x1d07];
+			page->tempOperator = &page->device.operators[(page->pageindex+1)*MaxPageShowOperatorSize];
 			
-			if(S_UserMPageBuffer->tempuser->crc == CalModbusCRC16Fun1(S_UserMPageBuffer->tempuser, OneOperatorStructSizeWithOutCrc))
+			if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
 			{
-				S_UserMPageBuffer->selectindex = S_UserMPageBuffer->lcdinput[0] - 0x1d07+1;
-				ShowDetail();
+				page->pageindex++; 
+
+				showCurrentPageList();
 			}
 		}
+	}
+	/*选择操作人*/
+	else if((page->lcdinput[0] >= 0x1d07)&&(page->lcdinput[0] <= 0x1d0B))
+	{
+		page->tempOperator = &page->device.operators[(page->pageindex)*MaxPageShowOperatorSize + page->lcdinput[0] - 0x1d07];
+		
+		if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
+		{
+			page->tempV1 = page->lcdinput[0] - 0x1d07+1;
+			BasicPic(0x1d40, 1, 137, 11, 10, 303, 79, 157, 135+(page->tempV1-1)*72);
+			
+			page->currentOperator = page->tempOperator;
+			
+			showCurrentOperatorInfo();
+		}	
+	}
+	/*删除*/
+	else if(page->lcdinput[0] == 0x1d01)
+	{
+		if(page->isLocked)
+			deleteCurrentOperator();
+	}
+	//修改或者添加
+	else if(page->lcdinput[0] == 0x1d02)
+	{
+		if(strlen(page->newOperator.name) > 0)
+		{
+			if(My_Pass == addOrModifyOperator())
+				SendKeyCode(1);
+			else
+				SendKeyCode(2);
+		}
+		else
+			SendKeyCode(2);
+	}
+	//姓名
+	else if(page->lcdinput[0] == 0x1d50)
+	{
+		getLcdInputData(page->newOperator.name, &pbuf[7]);
+	}
+	//年龄
+	else if(page->lcdinput[0] == 0x1d60)
+	{
+		getLcdInputData(page->newOperator.age, &pbuf[7]);
+	}
+	//性别
+	else if(page->lcdinput[0] == 0x1d70)
+	{
+		getLcdInputData(page->newOperator.sex, &pbuf[7]);
+	}
+	//联系方式
+	else if(page->lcdinput[0] == 0x1d80)
+	{
+		getLcdInputData(page->newOperator.phone, &pbuf[7]);
+	}
+	//职位
+	else if(page->lcdinput[0] == 0x1d90)
+	{
+		getLcdInputData(page->newOperator.job, &pbuf[7]);
+	}
+	//备注
+	else if(page->lcdinput[0] == 0x1da0)
+	{
+		getLcdInputData(page->newOperator.department, &pbuf[7]);
 	}
 }
 
@@ -169,7 +211,23 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
+	if(TimeOut == timer_expired(&(page->timer)))
+	{
+		//先给设备信息文件上锁，防止其他线程修改数据
+		if((page->isLocked == false) && (My_Pass == LockObject(page->myDeviceLock, &page, 1)))
+		{
+			/*读取所有操作人*/
+			ReadDeviceFromFile(&(page->device));
+			
+			page->pageindex = 0;
 
+			showCurrentPageList();
+			
+			page->isLocked = true;
+		}
+		
+		timer_restart(&(page->timer));
+	}
 }
 
 /***************************************************************************************************
@@ -197,11 +255,6 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
-	if(S_UserMPageBuffer)
-	{
-
-	}
-	
 	SelectPage(106);
 }
 
@@ -216,6 +269,8 @@ static void activityResume(void)
 ***************************************************************************************************/
 static void activityDestroy(void)
 {
+	UnLockObject(page->myDeviceLock, &page);
+	
 	activityBufferFree();
 }
 
@@ -228,15 +283,15 @@ static void activityDestroy(void)
 *Author: xsx
 *Date: 
 ***************************************************************************************************/
-static MyState_TypeDef activityBufferMalloc(void)
+static MyRes activityBufferMalloc(void)
 {
-	if(NULL == S_UserMPageBuffer)
+	if(NULL == page)
 	{
-		S_UserMPageBuffer = MyMalloc(sizeof(UserMPageBuffer));
+		page = MyMalloc(sizeof(UserMPageBuffer));
 		
-		if(S_UserMPageBuffer)
+		if(page)
 		{
-			memset(S_UserMPageBuffer, 0, sizeof(UserMPageBuffer));
+			memset(page, 0, sizeof(UserMPageBuffer));
 	
 			return My_Pass;
 		}
@@ -258,8 +313,8 @@ static MyState_TypeDef activityBufferMalloc(void)
 ***************************************************************************************************/
 static void activityBufferFree(void)
 {
-	MyFree(S_UserMPageBuffer);
-	S_UserMPageBuffer = NULL;
+	MyFree(page);
+	page = NULL;
 }
 
 /***************************************************************************************************/
@@ -267,65 +322,208 @@ static void activityBufferFree(void)
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
-static void ShowList(void)
+/***************************************************************************************************
+*FunctionName:  showCurrentPageList
+*Description:  显示当前页操作人列表
+*Input:  
+*Output:  
+*Return:  
+*Author:  xsx
+*Date: 2017年7月6日 14:16:50
+***************************************************************************************************/
+static void showCurrentPageList(void)
 {
-	unsigned char i = 0;
+	page->tempV1 = page->pageindex*MaxPageShowOperatorSize;
 	
-	i = (S_UserMPageBuffer->pageindex-1)*MaxPageShowOperatorSize;
-	
-	S_UserMPageBuffer->tempuser = &(S_UserMPageBuffer->device.operators[i]);
+	page->tempOperator = &(page->device.operators[page->tempV1]);
 	
 	/*显示列表数据*/
-	for(i=0; i<MaxPageShowOperatorSize; i++)
-	{		
-		if(S_UserMPageBuffer->tempuser->crc == CalModbusCRC16Fun1(S_UserMPageBuffer->tempuser, OneOperatorStructSizeWithOutCrc))
-			sprintf(S_UserMPageBuffer->buf, "%s\0", S_UserMPageBuffer->tempuser->name);
-		else
-			sprintf(S_UserMPageBuffer->buf, "\0");
-		
-		DisText(0x1d10+8*i, S_UserMPageBuffer->buf, strlen(S_UserMPageBuffer->buf)+1);
-		
-		S_UserMPageBuffer->tempuser++;
-	}
-}
-
-static void ShowDetail(void)
-{
-	unsigned char i = 0;
-	
-	if((S_UserMPageBuffer->selectindex > 0) && (S_UserMPageBuffer->selectindex <= MaxPageShowOperatorSize))
+	for(page->tempV1=0; page->tempV1<MaxOperatorSize; page->tempV1++)
 	{
-		i = (S_UserMPageBuffer->pageindex-1)*MaxPageShowOperatorSize + S_UserMPageBuffer->selectindex-1;
-	
-		memcpy(&(S_UserMPageBuffer->tempnewuser), &(S_UserMPageBuffer->device.operators[i]), OneOperatorStructSize);
+		if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
+			snprintf(page->buf, OperatorNameLen, "%s", page->tempOperator->name);
+		else
+			memset(page->buf, 0, 10);
+		
+		DisText(0x1d10+8*page->tempV1, page->buf, strlen(page->buf)+1);
+		
+		page->tempOperator++;
 	}
-	else
-		memset(&(S_UserMPageBuffer->tempnewuser), 0, OneOperatorStructSize);
 	
-	if(S_UserMPageBuffer->tempnewuser.crc == CalModbusCRC16Fun1(&(S_UserMPageBuffer->tempnewuser), OneOperatorStructSizeWithOutCrc))
-	{	
-		BasicPic(0x1d40, 1, 137, 11, 10, 303, 79, 157, 135+(S_UserMPageBuffer->selectindex-1)*72);	
-	}
-	else
-		BasicPic(0x1d40, 0, 137, 266, 215, 559, 284, 157, 135+(S_UserMPageBuffer->selectindex-1)*72);
+	page->currentOperator = NULL;
 	
-	sprintf(S_UserMPageBuffer->buf, "%s\0", S_UserMPageBuffer->tempnewuser.name);
-	DisText(0x1d50, S_UserMPageBuffer->buf, strlen(S_UserMPageBuffer->buf)+1);
-		
-	sprintf(S_UserMPageBuffer->buf, "%s\0", S_UserMPageBuffer->tempnewuser.age);
-	DisText(0x1d60, S_UserMPageBuffer->buf, strlen(S_UserMPageBuffer->buf)+1);
-		
-	sprintf(S_UserMPageBuffer->buf, "%s\0", S_UserMPageBuffer->tempnewuser.sex);
-	DisText(0x1d70, S_UserMPageBuffer->buf, strlen(S_UserMPageBuffer->buf)+1);
-		
-	sprintf(S_UserMPageBuffer->buf, "%s\0", S_UserMPageBuffer->tempnewuser.phone);
-	DisText(0x1d80, S_UserMPageBuffer->buf, strlen(S_UserMPageBuffer->buf)+1);
-		
-	sprintf(S_UserMPageBuffer->buf, "%s\0", S_UserMPageBuffer->tempnewuser.job);
-	DisText(0x1d90, S_UserMPageBuffer->buf, strlen(S_UserMPageBuffer->buf)+1);
-		
-	sprintf(S_UserMPageBuffer->buf, "%s\0", S_UserMPageBuffer->tempnewuser.department);
-	DisText(0x1da0, S_UserMPageBuffer->buf, strlen(S_UserMPageBuffer->buf)+1);
+	showCurrentOperatorInfo();
 }
 
+/***************************************************************************************************
+*FunctionName:  clearPageList
+*Description:  清除列表数据
+*Input:  
+*Output:  
+*Return:  
+*Author:  xsx
+*Date: 2017年7月7日 08:43:04
+***************************************************************************************************/
+static void clearPageList(void)
+{
+	/*显示列表数据*/
+	for(page->tempV1=0; page->tempV1<MaxPageShowOperatorSize; page->tempV1++)
+	{
+		ClearText(0x1d10+8*page->tempV1);
+	}
+	
+	page->currentOperator = NULL;
+	
+	showCurrentOperatorInfo();
+}
+
+/***************************************************************************************************
+*FunctionName:  showCurrentOperatorInfo
+*Description:  显示当前操作人信息
+*Input:  
+*Output:  
+*Return:  
+*Author:  xsx
+*Date: 2017年7月6日 14:19:13
+***************************************************************************************************/
+static void showCurrentOperatorInfo(void)
+{
+	if(page->currentOperator)
+	{
+		snprintf(page->buf, OperatorNameLen, "%s", page->currentOperator->name);
+		DisText(0x1d50, page->buf, strlen(page->buf)+1);
+			
+		snprintf(page->buf, 10, "%s", page->currentOperator->age);
+		DisText(0x1d60, page->buf, strlen(page->buf)+1);
+			
+		snprintf(page->buf, 10, "%s", page->currentOperator->sex);
+		DisText(0x1d70, page->buf, strlen(page->buf)+1);
+			
+		snprintf(page->buf, 20, "%s", page->currentOperator->phone);
+		DisText(0x1d80, page->buf, strlen(page->buf)+1);
+			
+		snprintf(page->buf, 30, "%s", page->currentOperator->job);
+		DisText(0x1d90, page->buf, strlen(page->buf)+1);
+			
+		snprintf(page->buf, 20, "%s", page->currentOperator->department);
+		DisText(0x1da0, page->buf, strlen(page->buf)+1);
+		
+		memcpy(&page->newOperator, page->currentOperator, OneOperatorStructSize);
+	}
+	else
+	{
+		ClearText(0x1d50);
+			
+		ClearText(0x1d60);
+				
+		ClearText(0x1d70);
+				
+		ClearText(0x1d80);
+				
+		ClearText(0x1d90);
+				
+		ClearText(0x1da0);
+		
+		BasicPic(0x1d40, 0, 137, 11, 10, 303, 79, 157, 135);
+		
+		memset(&page->newOperator, 0, OneOperatorStructSize);
+	}
+}
+
+/***************************************************************************************************
+*FunctionName:  deleteCurrentOperator
+*Description:  删除当前操作人
+*Input:  
+*Output:  
+*Return:  
+*Author:  xsx
+*Date: 2017年7月6日 15:25:44
+***************************************************************************************************/
+static void deleteCurrentOperator(void)
+{
+	if(page->currentOperator && page->currentOperator != &(page->newOperator))
+	{
+		//删除当前操作人
+		page->currentOperator->crc = 0;
+		
+		//重新排列操作人
+		page->tempOperator = page->currentOperator;
+		page->tempOperator++;
+		memset(page->operatorCopy, 0, MaxOperatorSize*OneOperatorStructSize);
+		page->tempV1 = OneOperatorStructSize * (&page->device.operators[MaxOperatorSize-1] - page->currentOperator);
+		memcpy(page->operatorCopy, page->tempOperator, page->tempV1);
+		
+		memcpy(page->currentOperator, page->operatorCopy, page->tempV1);
+		
+		page->device.crc = CalModbusCRC16Fun(&(page->device), DeviceStructCrcSize, NULL);
+		
+		if(My_Pass != SaveDeviceToFile(&(page->device)))
+			ReadDeviceFromFile(&page->device);
+		
+		page->pageindex = 0;
+
+		showCurrentPageList();
+	}
+}
+
+/***************************************************************************************************
+*FunctionName:  addOrModifyOperator
+*Description:  添加或者修改操作人
+*Input:  
+*Output:  
+*Return:  
+*Author:  xsx
+*Date: 2017年7月7日 16:07:17
+***************************************************************************************************/
+static MyRes addOrModifyOperator(void)
+{
+	page->newOperator.crc = CalModbusCRC16Fun(&page->newOperator, OneOperatorStructCrcSize, NULL);
+	
+	//查找是否存在名字一样的人
+	page->tempV2 = MaxOperatorSize;
+	page->tempOperator = page->device.operators;
+	for(page->tempV1 = 0; page->tempV1 < MaxOperatorSize; page->tempV1++)
+	{
+		if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
+		{
+			if(CheckStrIsSame(page->newOperator.name, page->tempOperator->name, OperatorNameLen))
+			{
+				memcpy(page->tempOperator, &page->newOperator, OneOperatorStructSize);
+				
+				break;
+			}
+		}
+		else if(page->tempV2 == MaxOperatorSize)
+			page->tempV2 = page->tempV1;
+		
+		page->tempOperator++;
+	}
+	
+	//如果不存在，说明要新建
+	if(page->tempV1 >= MaxOperatorSize)
+	{
+		//如果数量已满，则无法添加
+		if(page->tempV2 == MaxOperatorSize)
+			return My_Fail;
+		else
+			memcpy(&page->device.operators[page->tempV2], &page->newOperator, OneOperatorStructSize);
+	}
+	
+	page->device.crc = CalModbusCRC16Fun(&(page->device), DeviceStructCrcSize, NULL);
+		
+	if(My_Pass == SaveDeviceToFile(&(page->device)))
+	{
+		page->pageindex = 0;
+
+		showCurrentPageList();
+	
+		return My_Pass;
+	}
+	else
+	{
+		return My_Fail;
+	}
+		
+	
+}
 

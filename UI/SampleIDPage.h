@@ -13,7 +13,7 @@ typedef struct SampleIDPage_tag {
 	unsigned short lcdinput[100];
 }SampleIDPage;
 
-MyState_TypeDef createSampleActivity(Activity * thizActivity, Intent * pram);
+MyRes createSampleActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

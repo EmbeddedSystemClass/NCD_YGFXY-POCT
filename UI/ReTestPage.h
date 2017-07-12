@@ -16,7 +16,7 @@ typedef struct ReTestPageBuffer_tag {
 }ReTestPageBuffer;
 
 
-MyState_TypeDef createReTestActivity(Activity * thizActivity, Intent * pram);
+MyRes createReTestActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

@@ -14,7 +14,7 @@ typedef struct NetSetPageBuffer_tag {
 }NetSetPageBuffer;
 
 
-MyState_TypeDef createNetSetActivity(Activity * thizActivity, Intent * pram);
+MyRes createNetSetActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

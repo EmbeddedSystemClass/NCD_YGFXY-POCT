@@ -36,7 +36,7 @@ static void activityFresh(void);
 static void activityHide(void);
 static void activityResume(void);
 static void activityDestroy(void);
-static MyState_TypeDef activityBufferMalloc(void);
+static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
 static void RefreshSampleID(void);
@@ -56,7 +56,7 @@ static void RefreshSampleID(void);
 *Author: xsx
 *Date: 2016Äê12ÔÂ21ÈÕ09:00:09
 ***************************************************************************************************/
-MyState_TypeDef createSampleActivity(Activity * thizActivity, Intent * pram)
+MyRes createSampleActivity(Activity * thizActivity, Intent * pram)
 {
 	if(NULL == thizActivity)
 		return My_Fail;
@@ -237,7 +237,7 @@ static void activityDestroy(void)
 *Author: xsx
 *Date: 
 ***************************************************************************************************/
-static MyState_TypeDef activityBufferMalloc(void)
+static MyRes activityBufferMalloc(void)
 {
 	if(NULL == S_SampleIDPage)
 	{

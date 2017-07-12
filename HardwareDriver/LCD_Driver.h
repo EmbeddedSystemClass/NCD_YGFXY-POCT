@@ -26,6 +26,8 @@ void SetLEDLight(unsigned char num);
 void WriteVarIcoNum(unsigned short addr, unsigned short num);
 void unLockLCDOneTime(void);
 void writeDataToLcd(unsigned short addr, void * data, unsigned char len);
+void getLcdInputData(void * myBuffer, void * lcdData);
+
 #endif
 
 

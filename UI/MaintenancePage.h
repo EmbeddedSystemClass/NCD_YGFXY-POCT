@@ -12,7 +12,7 @@ typedef struct MaintenancePageBuffer_tag {
 
 #define	MaintenancePageBufferStructSize	sizeof(MaintenancePageBuffer)
 
-MyState_TypeDef createMaintenanceActivity(Activity * thizActivity, Intent * pram);
+MyRes createMaintenanceActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

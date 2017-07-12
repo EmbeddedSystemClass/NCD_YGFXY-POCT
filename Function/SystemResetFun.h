@@ -4,7 +4,7 @@
 
 #include	"Define.h"
 
-MyState_TypeDef SystemReset(void);
+MyRes SystemReset(void);
 
 #endif
 

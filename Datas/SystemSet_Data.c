@@ -48,7 +48,7 @@ void setDefaultSystemSetData(SystemSetData * systemSetData)
 	{
 		memset(systemSetData, 0, SystemSetDataStructSize);
 		
-		sprintf(systemSetData->deviceId, "NCD-Device\0");
+		snprintf(systemSetData->deviceId, DeviceIdLen+1, "NCD-Device");
 		
 		systemSetData->isAutoPrint = true;
 		systemSetData->isMute = false;
@@ -56,15 +56,11 @@ void setDefaultSystemSetData(SystemSetData * systemSetData)
 		systemSetData->ledSleepTime = 60;
 
 		systemSetData->wireNetSet.ipMode = Dynamic_IP;
-		systemSetData->serverSet.serverIP.ip_1 = 116;
-		systemSetData->serverSet.serverIP.ip_2 = 62;
-		systemSetData->serverSet.serverIP.ip_3 = 108;
-		systemSetData->serverSet.serverIP.ip_4 = 201;
-		systemSetData->serverSet.serverPort = 8080;
+		
 		
 		systemSetData->testLedLightIntensity = 200;
 		
-		systemSetData->crc = CalModbusCRC16Fun1(systemSetData, SystemSetDataStructCrcSize);
+		systemSetData->crc = CalModbusCRC16Fun(systemSetData, SystemSetDataStructCrcSize, NULL);
 	}
 }
 
@@ -91,18 +87,18 @@ void upDateSystemSetData(SystemSetData * systemSetData)
 *Description: 保存一个校准参数，先查找是否已存在，有则覆盖，无则添加
 *Input: adjData -- 校准参数
 *Output: 
-*Return: MyState_TypeDef -- fail表示无空闲位置保存
+*Return: MyRes -- fail表示无空闲位置保存
 *Author: xsx
 *Date: 2017年2月8日14:47:14
 ***************************************************************************************************/
-MyState_TypeDef addAdjPram(SystemSetData * systemSetData, AdjustData * adjData)
+MyRes addAdjPram(SystemSetData * systemSetData, AdjustData * adjData)
 {
 	unsigned char i = 0;
 	
 	if(adjData == NULL)
 		return My_Fail;
 	
-	if(systemSetData->crc != CalModbusCRC16Fun1(systemSetData, SystemSetDataStructCrcSize))
+	if(systemSetData->crc != CalModbusCRC16Fun(systemSetData, SystemSetDataStructCrcSize, NULL))
 		setDefaultSystemSetData(systemSetData);
 	
 	//查找是否存在
@@ -159,7 +155,7 @@ void getAdjPram(const SystemSetData * systemSetData, AdjustData * adjData)
 	
 	adjData->parm = 0;
 	
-	if(systemSetData->crc != CalModbusCRC16Fun1(systemSetData, SystemSetDataStructCrcSize))
+	if(systemSetData->crc != CalModbusCRC16Fun(systemSetData, SystemSetDataStructCrcSize, NULL))
 	{
 		adjData->parm = 1;
 		return;

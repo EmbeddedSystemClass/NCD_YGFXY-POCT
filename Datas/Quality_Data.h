@@ -4,7 +4,7 @@
 #include	"Define.h"
 #include	"DeviceQuality.h"
 
-MyState_TypeDef CreateADeviceQuality(void);
+MyRes CreateADeviceQuality(void);
 DeviceQuality * getGB_DeviceQuality(void);
 void deleteGB_DeviceQuality(void);
 

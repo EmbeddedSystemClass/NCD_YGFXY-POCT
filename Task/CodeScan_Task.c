@@ -99,7 +99,7 @@ static void vCodeScanTask( void *pvParameters )
 *Author£ºxsx
 *Data£º2016Äê7ÔÂ11ÈÕ14:56:57
 ***************************************************************************************************/
-MyState_TypeDef StartScanQRCode(QRCode * parm)
+MyRes StartScanQRCode(QRCode * parm)
 {
 	if(pdPASS == xQueueSend( xStartScanQueue, &parm, 10*portTICK_RATE_MS))
 		return My_Pass;
@@ -108,7 +108,7 @@ MyState_TypeDef StartScanQRCode(QRCode * parm)
 }
 
 
-MyState_TypeDef TakeScanQRCodeResult(ScanCodeResult *scanresult)
+MyRes TakeScanQRCodeResult(ScanCodeResult *scanresult)
 {
 	if(pdPASS == xQueueReceive( xScanResultQueue, scanresult,  0/portTICK_RATE_MS))
 		return My_Pass;

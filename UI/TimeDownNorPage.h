@@ -13,7 +13,7 @@ typedef struct TimeDownPage_tag {
 }TimeDownPageData;
 
 
-MyState_TypeDef createTimeDownActivity(Activity * thizActivity, Intent * pram);
+MyRes createTimeDownActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

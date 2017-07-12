@@ -21,7 +21,7 @@ typedef struct QualityPageBuffer_tag {
 
 #define	QualityPageBufferStructSize	sizeof(QualityPageBuffer)
 
-MyState_TypeDef createQualityActivity(Activity * thizActivity, Intent * pram);
+MyRes createQualityActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

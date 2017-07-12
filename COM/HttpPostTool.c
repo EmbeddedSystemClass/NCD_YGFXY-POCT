@@ -34,7 +34,7 @@
 /***************************************************************************************************/
 static void PostDataByWireNet(HttpPostBuffer * httpPostBuffer);
 static void PostDataByWifi(HttpPostBuffer * httpPostBuffer);
-static MyState_TypeDef responeIsSuccessAndParse(HttpPostBuffer * httpPostBuffer);
+static MyRes responeIsSuccessAndParse(HttpPostBuffer * httpPostBuffer);
 /***************************************************************************************************/
 /**************************************局部函数声明*************************************************/
 /***************************************************************************************************/
@@ -47,7 +47,7 @@ static MyState_TypeDef responeIsSuccessAndParse(HttpPostBuffer * httpPostBuffer)
 /***************************************************************************************************/
 
 
-MyState_TypeDef PostData(HttpPostBuffer * httpPostBuffer)
+MyRes PostData(HttpPostBuffer * httpPostBuffer)
 {
 	if(httpPostBuffer)
 	{
@@ -152,10 +152,10 @@ static void PostDataByWifi(HttpPostBuffer * httpPostBuffer)
 				goto END;
 		}
 		
-		//接收数据,最好等待1s
-		readSize = 0;
-		while(pdPASS == ReceiveDataFromQueue(GetUsart4RXQueue(), NULL, httpPostBuffer->recvBuf+readSize, 1000, 
-			&readSize, 1, 1000 / portTICK_RATE_MS, 1000 / portTICK_RATE_MS))
+		//接收数据,最好等待1s,读取长度过大有可能末尾的数据丢失
+		httpPostBuffer->recvBufferLen = 0;
+		while(pdPASS == ReceiveDataFromQueue(GetUsart4RXQueue(), NULL, httpPostBuffer->recvBuf + httpPostBuffer->recvBufferLen, 500, 
+			&readSize, 1, 500 / portTICK_RATE_MS, 1000 / portTICK_RATE_MS))
 		{
 			httpPostBuffer->recvBufferLen += readSize;
 		}
@@ -165,28 +165,31 @@ static void PostDataByWifi(HttpPostBuffer * httpPostBuffer)
 	}
 }
 
-static MyState_TypeDef responeIsSuccessAndParse(HttpPostBuffer * httpPostBuffer)
+static MyRes responeIsSuccessAndParse(HttpPostBuffer * httpPostBuffer)
 {
 	char * tempReceiveBuf = NULL;
-	char * tempPoint = NULL;
-	MyState_TypeDef status = My_Fail;
+	char * tempPoint1 = NULL;
+	char * tempPoint2 = NULL;
+	MyRes status = My_Fail;
 	
 	tempReceiveBuf = MyMalloc(httpPostBuffer->recvBufferLen+10);
 	
 	if(tempReceiveBuf)
 	{
 		memcpy(tempReceiveBuf, httpPostBuffer->recvBuf, httpPostBuffer->recvBufferLen+10);
-		if(true == CheckStrIsSame(tempReceiveBuf, HttpResponeOK, strlen(HttpResponeOK)))
+		
+		tempPoint2 = strstr(tempReceiveBuf, HttpResponeOK);
+		if(tempPoint2)
 		{
-			tempPoint = strtok(tempReceiveBuf, "\r\n");
-			tempPoint = strtok(NULL, "\r\n");
-			tempPoint = strtok(NULL, "\r\n");
-			tempPoint = strtok(NULL, "\r\n");
-			tempPoint = strtok(NULL, "\r\n");
-			tempPoint = strtok(NULL, "\r\n");
-			tempPoint = strtok(NULL, "\r\n");
+			tempPoint1 = strtok(tempPoint2, "\r\n");
+			tempPoint1 = strtok(NULL, "\r\n");
+			tempPoint1 = strtok(NULL, "\r\n");
+			tempPoint1 = strtok(NULL, "\r\n");
+			tempPoint1 = strtok(NULL, "\r\n");
+			tempPoint1 = strtok(NULL, "\r\n");
+			tempPoint1 = strtok(NULL, "\r\n");
 			
-			utf8ConvertToGBK(tempPoint, strlen(tempPoint), httpPostBuffer->recvBuf, &(httpPostBuffer->recvBufferLen));
+			utf8ConvertToGBK(tempPoint1, strlen(tempPoint1), httpPostBuffer->recvBuf, &(httpPostBuffer->recvBufferLen));
 
 			status = My_Pass;
 		}

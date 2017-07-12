@@ -34,11 +34,10 @@ static xSemaphoreHandle xWifiMutex = NULL;									//WIFI互斥量
 /***************************************************************************************************/
 /**************************************局部函数声明*************************************************/
 /***************************************************************************************************/
-static MyState_TypeDef ComWithWIFI(char * cmd, const char *strcmp, char *buf, unsigned short buflen, portTickType xBlockTime);
+static MyRes ComWithWIFI(char * cmd, const char *strcmp, char *buf, unsigned short buflen, portTickType xBlockTime);
 static void ProgressWifiListData(WIFI_Def *wifis, char *buf);
-static MyState_TypeDef SetWifiServerInfo(SystemSetData * systemSetData);
-static MyState_TypeDef SetWifiDefaultWorkMode(void);
-static MyState_TypeDef SetWifiWorkInSTAMode(void);
+static MyRes SetWifiDefaultWorkMode(void);
+static MyRes SetWifiWorkInSTAMode(void);
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************正文********************************************************/
@@ -55,7 +54,7 @@ static MyState_TypeDef SetWifiWorkInSTAMode(void);
 *Author: xsx
 *Date: 2017年3月7日09:41:10
 ***************************************************************************************************/
-MyState_TypeDef takeWifiMutex(portTickType xBlockTime)
+MyRes takeWifiMutex(portTickType xBlockTime)
 {
 	if(pdPASS == xSemaphoreTake(xWifiMutex, xBlockTime))
 		return My_Pass;
@@ -76,9 +75,9 @@ void giveWifixMutex(void)
 *Author: xsx
 *Date: 2017年3月7日09:41:31
 ***************************************************************************************************/
-static MyState_TypeDef ComWithWIFI(char * cmd, const char *strcmp, char *buf, unsigned short buflen, portTickType xBlockTime)
+static MyRes ComWithWIFI(char * cmd, const char *strcmp, char *buf, unsigned short buflen, portTickType xBlockTime)
 {
-	MyState_TypeDef statues = My_Pass;
+	MyRes statues = My_Pass;
 	unsigned char errorCnt = 0;
 	
 	//清空队列数据
@@ -140,9 +139,9 @@ void WIFIInit(SystemSetData * systemSetData)
 *Author：xsx
 *Data：2016年3月14日10:43:46
 ***************************************************************************************************/
-MyState_TypeDef SetWifiWorkInAT(WIFI_WorkMode_DefType mode)
+MyRes SetWifiWorkInAT(WIFI_WorkMode_DefType mode)
 {
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	char *txbuf = NULL;
 	
 	if(mode == GetWifiWorkMode())
@@ -190,10 +189,10 @@ WIFI_WorkMode_DefType GetWifiWorkMode(void)
 	return mode;
 }
 
-static MyState_TypeDef SetWifiDefaultWorkMode(void)
+static MyRes SetWifiDefaultWorkMode(void)
 {
 	char *txbuf = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	txbuf = MyMalloc(500);
 	if(txbuf)
@@ -207,10 +206,10 @@ static MyState_TypeDef SetWifiDefaultWorkMode(void)
 	return statues;
 }
 
-static MyState_TypeDef SetWifiWorkInSTAMode(void)
+static MyRes SetWifiWorkInSTAMode(void)
 {
 	char *txbuf = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	txbuf = MyMalloc(500);
 	if(txbuf)
@@ -224,10 +223,10 @@ static MyState_TypeDef SetWifiWorkInSTAMode(void)
 	return statues;
 }
 
-MyState_TypeDef ScanApList(WIFI_Def *wifis)
+MyRes ScanApList(WIFI_Def *wifis)
 {
 	char *txbuf = NULL; 
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 
 	txbuf = MyMalloc(1000);
 	if(txbuf)
@@ -317,11 +316,11 @@ static void ProgressWifiListData(WIFI_Def *wifis, char *buf)
 	}
 }
 
-MyState_TypeDef ConnectWifi(WIFI_Def *wifis)
+MyRes ConnectWifi(WIFI_Def *wifis)
 {
 	char *txbuf = NULL;
 	unsigned char i=0;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	/*发送数据缓冲区*/
 	txbuf = MyMalloc(500);
@@ -367,11 +366,11 @@ MyState_TypeDef ConnectWifi(WIFI_Def *wifis)
 }
 
 
-MyState_TypeDef GetWifiStaIP(IP * ip)
+MyRes GetWifiStaIP(IP * ip)
 {
 	char *txbuf = NULL;
 	char * tempp1 = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	/*发送数据缓冲区*/
 	txbuf = MyMalloc(500);
@@ -401,12 +400,12 @@ MyState_TypeDef GetWifiStaIP(IP * ip)
 	return statues;
 }
 
-MyState_TypeDef GetWifiStaMac(char *mac)
+MyRes GetWifiStaMac(char *mac)
 {
 	char *txbuf = NULL;
 	char * tempp1 = NULL;
 	
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	/*发送数据缓冲区*/
 	txbuf = MyMalloc(500);
@@ -431,13 +430,13 @@ MyState_TypeDef GetWifiStaMac(char *mac)
 	return statues;
 }
 
-MyState_TypeDef WifiIsConnectted(char * ssid)
+MyRes WifiIsConnectted(char * ssid)
 {
 	char *txbuf = NULL; 
 	char * tempp1 = NULL;
 	char * tempp2 = NULL;
 	unsigned char len = 0;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	/*发送数据缓冲区*/
 	txbuf = MyMalloc(500);
@@ -477,10 +476,10 @@ MyState_TypeDef WifiIsConnectted(char * ssid)
 	return statues;
 }
 
-MyState_TypeDef RestartWifi(void)
+MyRes RestartWifi(void)
 {
 	char *txbuf = NULL; 
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	/*发送数据缓冲区*/
 	txbuf = MyMalloc(500);
@@ -496,10 +495,10 @@ MyState_TypeDef RestartWifi(void)
 	return statues;
 }
 
-MyState_TypeDef CheckWifiMID(void)
+MyRes CheckWifiMID(void)
 {
 	char *txbuf = NULL; 
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	/*发送数据缓冲区*/
 	txbuf = MyMalloc(500);
@@ -560,17 +559,52 @@ unsigned char GetWifiIndicator(void)
 	return ind;
 }
 
-static MyState_TypeDef SetWifiServerInfo(SystemSetData * systemSetData)
+/***************************************************************************************************
+*FunctionName:  SetWifiServerInfo
+*Description:  设置服务器信息，由于需要连接两个服务器，所以同时使用socket,分别连接
+*				但是从串口发送的数据时同时发送给两个服务器，所以需要对接收数据进行判断是哪个服务器返回的数据
+*Input:  
+*Output:  
+*Return:  
+*Author:  xsx
+*Date: 2017年6月30日 15:10:13
+***************************************************************************************************/
+MyRes SetWifiServerInfo(const SystemSetData * systemSetData)
 {
 	char *txbuf = NULL; 
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	/*发送数据缓冲区*/
 	txbuf = MyMalloc(500);
 	if(txbuf)
 	{
+		//设置socketA服务器信息
 		sprintf(txbuf, "AT+NETP=TCP,CLIENT,%d,%d.%d.%d.%d\r\n\0", systemSetData->serverSet.serverPort, systemSetData->serverSet.serverIP.ip_1, 
 			systemSetData->serverSet.serverIP.ip_2, systemSetData->serverSet.serverIP.ip_3, systemSetData->serverSet.serverIP.ip_4);
+		if(My_Pass == ComWithWIFI(txbuf, "+ok", txbuf, 100, 1000 * portTICK_RATE_MS))
+			statues = My_Pass;
+		
+		//设置socketB的服务器信息
+		sprintf(txbuf, "AT+SOCKB=TCP,%d,%d.%d.%d.%d\r\n\0", NCD_ServerPort, NCD_ServerIp_1, NCD_ServerIp_2, NCD_ServerIp_3, NCD_ServerIp_4);
+		if(My_Pass == ComWithWIFI(txbuf, "+ok", txbuf, 100, 1000 * portTICK_RATE_MS))
+			statues = My_Pass;
+	}
+	MyFree(txbuf);
+	
+	return statues;
+}
+
+MyRes closeWifiServerA(void)
+{
+	char *txbuf = NULL; 
+	MyRes statues = My_Fail;
+	
+	/*发送数据缓冲区*/
+	txbuf = MyMalloc(500);
+	if(txbuf)
+	{
+		//设置socketA服务器信息
+		sprintf(txbuf, "AT+NETP=TCP,CLIENT,8080,127.0.0.1\r\n\0");
 		if(My_Pass == ComWithWIFI(txbuf, "+ok", txbuf, 100, 1000 * portTICK_RATE_MS))
 			statues = My_Pass;
 	}

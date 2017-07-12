@@ -43,10 +43,10 @@
 *Author: xsx
 *Date: 2016年12月16日16:57:32
 ***************************************************************************************************/
-MyState_TypeDef SaveSystemSetData(SystemSetData * systemSetData)
+MyRes SaveSystemSetData(SystemSetData * systemSetData)
 {
 	FatfsFileInfo_Def * myfile = NULL;
-	MyState_TypeDef status = My_Fail;
+	MyRes status = My_Fail;
 	
 	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
 	
@@ -60,7 +60,7 @@ MyState_TypeDef SaveSystemSetData(SystemSetData * systemSetData)
 		{
 			f_lseek(&(myfile->file), 0);
 			
-			systemSetData->crc = CalModbusCRC16Fun1(systemSetData, sizeof(SystemSetData)-2);
+			systemSetData->crc = CalModbusCRC16Fun(systemSetData, sizeof(SystemSetData)-2, NULL);
 			
 			myfile->res = f_write(&(myfile->file), systemSetData, sizeof(SystemSetData), &(myfile->bw));
 			
@@ -91,10 +91,10 @@ MyState_TypeDef SaveSystemSetData(SystemSetData * systemSetData)
 *Author: xsx
 *Date: 2016年12月16日16:57:06
 ***************************************************************************************************/
-MyState_TypeDef ReadSystemSetData(SystemSetData * systemSetData)
+MyRes ReadSystemSetData(SystemSetData * systemSetData)
 {
 	FatfsFileInfo_Def * myfile = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
 	

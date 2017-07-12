@@ -42,10 +42,10 @@
 *Author: xsx
 *Date: 2017年2月16日15:25:32
 ***************************************************************************************************/
-MyState_TypeDef WriteRemoteSoftInfo(RemoteSoftInfo * remoteSoftInfo)
+MyRes WriteRemoteSoftInfo(RemoteSoftInfo * remoteSoftInfo)
 {
 	FatfsFileInfo_Def * myfile = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
 	
@@ -81,10 +81,10 @@ MyState_TypeDef WriteRemoteSoftInfo(RemoteSoftInfo * remoteSoftInfo)
 *Author: xsx
 *Date: 2017年2月16日15:25:44
 ***************************************************************************************************/
-MyState_TypeDef ReadRemoteSoftInfo(RemoteSoftInfo * remoteSoftInfo)
+MyRes ReadRemoteSoftInfo(RemoteSoftInfo * remoteSoftInfo)
 {
 	FatfsFileInfo_Def * myfile = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
 	

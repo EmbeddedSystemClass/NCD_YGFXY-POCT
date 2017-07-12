@@ -226,7 +226,7 @@ PaiduiUnitData * GetCurrentTestItem(void)
 *Author: xsx
 *Date: 2016Äê12ÔÂ2ÈÕ15:55:07
 ***************************************************************************************************/
-MyState_TypeDef DeleteCurrentTest(void)
+MyRes DeleteCurrentTest(void)
 {
 	if(GB_TestBuffer.CurrentTestDataBuffer)
 	{

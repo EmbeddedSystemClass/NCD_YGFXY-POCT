@@ -2,25 +2,18 @@
 /*****************************************头文件*******************************************/
 
 #include	"AboutUsPage.h"
-#include	"Define.h"
 #include	"LCD_Driver.h"
 #include	"UI_Data.h"
 #include	"MyMem.h"
 #include	"RemoteSoft_Data.h"
-
-#include	"SleepPage.h"
-#include	"PlaySong_Task.h"
-
-#include 	"FreeRTOS.h"
-#include 	"task.h"
-#include 	"queue.h"
+#include	"SystemSet_Data.h"
 
 #include	<string.h>
 #include	"stdio.h"
 
 /******************************************************************************************/
 /*****************************************局部变量声明*************************************/
-static AboutUsPageBuffer * S_AboutUsPageBuffer = NULL;
+static AboutUsPageBuffer * page = NULL;
 /******************************************************************************************/
 /*****************************************局部函数声明*************************************/
 static void activityStart(void);
@@ -29,10 +22,11 @@ static void activityFresh(void);
 static void activityHide(void);
 static void activityResume(void);
 static void activityDestroy(void);
-static MyState_TypeDef activityBufferMalloc(void);
+static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
 static void dspPageText(void);
+static void freshRemoteFirmwareVersion(void);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -49,7 +43,7 @@ static void dspPageText(void);
 *Author: xsx
 *Date: 2016年12月21日09:00:09
 ***************************************************************************************************/
-MyState_TypeDef createAboutUsActivity(Activity * thizActivity, Intent * pram)
+MyRes createAboutUsActivity(Activity * thizActivity, Intent * pram)
 {
 	if(NULL == thizActivity)
 		return My_Fail;
@@ -75,10 +69,11 @@ MyState_TypeDef createAboutUsActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_AboutUsPageBuffer)
-	{
-		dspPageText();
-	}
+	timer_set(&(page->timer), 10);
+	
+	dspPageText();
+		
+	freshRemoteFirmwareVersion();
 		
 	SelectPage(116);
 }
@@ -94,17 +89,14 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(S_AboutUsPageBuffer)
-	{
-		/*命令*/
-		S_AboutUsPageBuffer->lcdinput[0] = pbuf[4];
-		S_AboutUsPageBuffer->lcdinput[0] = (S_AboutUsPageBuffer->lcdinput[0]<<8) + pbuf[5];
+	/*命令*/
+	page->lcdinput[0] = pbuf[4];
+	page->lcdinput[0] = (page->lcdinput[0]<<8) + pbuf[5];
 		
-		//返回
-		if(S_AboutUsPageBuffer->lcdinput[0] == 0x2900)
-		{
-			backToFatherActivity();
-		}
+	//返回
+	if(page->lcdinput[0] == 0x2900)
+	{
+		backToFatherActivity();
 	}
 }
 
@@ -119,9 +111,10 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(S_AboutUsPageBuffer)
+	if(TimeOut == timer_expired(&(page->timer)))
 	{
-
+		freshRemoteFirmwareVersion();
+		timer_restart(&(page->timer));
 	}
 }
 
@@ -150,10 +143,11 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
-	if(S_AboutUsPageBuffer)
-	{	
-		dspPageText();
-	}
+	dspPageText();
+	
+	freshRemoteFirmwareVersion();
+	
+	timer_restart(&(page->timer));
 	
 	SelectPage(116);
 }
@@ -181,15 +175,15 @@ static void activityDestroy(void)
 *Author: xsx
 *Date: 
 ***************************************************************************************************/
-static MyState_TypeDef activityBufferMalloc(void)
+static MyRes activityBufferMalloc(void)
 {
-	if(NULL == S_AboutUsPageBuffer)
+	if(NULL == page)
 	{
-		S_AboutUsPageBuffer = MyMalloc(sizeof(AboutUsPageBuffer));
+		page = MyMalloc(sizeof(AboutUsPageBuffer));
 		
-		if(S_AboutUsPageBuffer)
+		if(page)
 		{
-			memset(S_AboutUsPageBuffer, 0, sizeof(AboutUsPageBuffer));
+			memset(page, 0, sizeof(AboutUsPageBuffer));
 	
 			return My_Pass;
 		}
@@ -211,36 +205,56 @@ static MyState_TypeDef activityBufferMalloc(void)
 ***************************************************************************************************/
 static void activityBufferFree(void)
 {
-	MyFree(S_AboutUsPageBuffer);
-	S_AboutUsPageBuffer = NULL;
+	MyFree(page);
+	page = NULL;
 }
 
+/***************************************************************************************************
+*FunctionName:  dspPageText
+*Description:  显示界面内容
+*Input:  
+*Output:  
+*Return:  
+*Author:  xsx
+*Date: 2017年7月6日 13:56:23
+***************************************************************************************************/
 static void dspPageText(void)
+{
+	snprintf(page->buf, 20, "%s", GB_SoftVersion_Build);
+	DisText(0x2920, page->buf, strlen(page->buf)+1);
+	
+	//设置二维码x,y,像素点大小
+	page->buf[0] = 0;
+	page->buf[1] = 180;
+	page->buf[2] = 0x01;
+	page->buf[3] = 0x42;
+	page->buf[4] = 0;
+	page->buf[5] = 0x02;
+	writeDataToLcd(0x2941, page->buf, 6);
+
+	//显示二维码
+	snprintf(page->buf, 50, "http://www.whnewcando.com/?%s", getGBSystemSetData()->deviceId);
+	writeDataToLcd(0x2950, page->buf, strlen(page->buf)+1);
+}
+
+/***************************************************************************************************
+*FunctionName:  freshRemoteFirmwareVersion
+*Description:  刷新远程软件版本
+*Input:  
+*Output:  
+*Return:  
+*Author:  xsx
+*Date: 2017年7月6日 14:01:36
+***************************************************************************************************/
+static void freshRemoteFirmwareVersion(void)
 {
 	if((getIsSuccessDownloadFirmware() == true) && (getGbRemoteFirmwareVersion() > GB_SoftVersion))
 	{
-		S_AboutUsPageBuffer->tempV = getGbRemoteFirmwareVersion();
-		sprintf(S_AboutUsPageBuffer->buf, "V%d.%d.%02d (新版本V%d.%d.%02d)\0", GB_SoftVersion/1000, GB_SoftVersion%1000/100, GB_SoftVersion%100,
-			S_AboutUsPageBuffer->tempV/1000, S_AboutUsPageBuffer->tempV%1000/100, S_AboutUsPageBuffer->tempV%100);
+		page->tempV = getGbRemoteFirmwareVersion();
+		snprintf(page->buf, 50, "V%d.%d.%02d (新版本V%d.%d.%02d)", GB_SoftVersion/1000, GB_SoftVersion%1000/100, GB_SoftVersion%100,
+			page->tempV/1000, page->tempV%1000/100, page->tempV%100);
 	}
 	else
-		sprintf(S_AboutUsPageBuffer->buf, "V%d.%d.%02d\0", GB_SoftVersion/1000, GB_SoftVersion%1000/100, GB_SoftVersion%100);
-	DisText(0x2910, S_AboutUsPageBuffer->buf, strlen(S_AboutUsPageBuffer->buf)+1);
-
-	sprintf(S_AboutUsPageBuffer->buf, "%s\0", GB_SoftVersion_Build);
-	DisText(0x2920, S_AboutUsPageBuffer->buf, strlen(S_AboutUsPageBuffer->buf)+1);
-	
-	//设置二维码x,y,像素点大小
-	S_AboutUsPageBuffer->buf[0] = 0;
-	S_AboutUsPageBuffer->buf[1] = 180;
-	S_AboutUsPageBuffer->buf[2] = 0x01;
-	S_AboutUsPageBuffer->buf[3] = 0x42;
-	S_AboutUsPageBuffer->buf[4] = 0;
-	S_AboutUsPageBuffer->buf[5] = 0x02;
-	writeDataToLcd(0x2941, S_AboutUsPageBuffer->buf, 6);
-
-	//显示二维码
-	sprintf(S_AboutUsPageBuffer->buf, "http://www.whnewcando.com/?%s\0", getGBSystemSetData()->deviceId);
-	writeDataToLcd(0x2950, S_AboutUsPageBuffer->buf, strlen(S_AboutUsPageBuffer->buf)+1);
+		snprintf(page->buf, 50, "V%d.%d.%02d", GB_SoftVersion/1000, GB_SoftVersion%1000/100, GB_SoftVersion%100);
+	DisText(0x2910, page->buf, strlen(page->buf)+1);
 }
-

@@ -15,18 +15,19 @@ typedef enum
 
 void WIFIInit(SystemSetData * systemSetData);
 
-MyState_TypeDef takeWifiMutex(portTickType xBlockTime);
+MyRes takeWifiMutex(portTickType xBlockTime);
 void giveWifixMutex(void);
 WIFI_WorkMode_DefType GetWifiWorkMode(void);
-MyState_TypeDef SetWifiWorkInAT(WIFI_WorkMode_DefType mode);
-MyState_TypeDef ScanApList(WIFI_Def *wifis);
-MyState_TypeDef ConnectWifi(WIFI_Def *wifis);
-MyState_TypeDef RestartWifi(void);
-MyState_TypeDef GetWifiStaMac(char *mac);
-MyState_TypeDef GetWifiStaIP(IP * ip);
-MyState_TypeDef CheckWifiMID(void);
+MyRes SetWifiWorkInAT(WIFI_WorkMode_DefType mode);
+MyRes ScanApList(WIFI_Def *wifis);
+MyRes ConnectWifi(WIFI_Def *wifis);
+MyRes RestartWifi(void);
+MyRes GetWifiStaMac(char *mac);
+MyRes GetWifiStaIP(IP * ip);
+MyRes CheckWifiMID(void);
 unsigned char GetWifiIndicator(void);
-MyState_TypeDef WifiIsConnectted(char * ssid);
-
+MyRes WifiIsConnectted(char * ssid);
+MyRes closeWifiServerA(void);
+MyRes SetWifiServerInfo(const SystemSetData * systemSetData);
 #endif
 

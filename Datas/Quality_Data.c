@@ -27,7 +27,7 @@ static DeviceQuality * GB_DeviceQuality = NULL;
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-MyState_TypeDef CreateADeviceQuality(void)
+MyRes CreateADeviceQuality(void)
 {
 	if(GB_DeviceQuality == NULL)
 		GB_DeviceQuality = MyMalloc(DeviceQualityStructSize);

@@ -11,7 +11,7 @@ typedef struct WaitPage_tag {
 	unsigned short lcdinput[100];
 }WaitPageData;
 
-MyState_TypeDef createWaittingCardActivity(Activity * thizActivity, Intent * pram);
+MyRes createWaittingCardActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

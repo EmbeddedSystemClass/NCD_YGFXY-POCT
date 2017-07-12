@@ -85,35 +85,30 @@ const static unsigned char auchCRCLo[] =
 ** 时  间:  
 ** 作  者：xsx                                                 
 ************************************************************************/
-unsigned short CalModbusCRC16Fun1(const void *puchMsg, unsigned short usDataLen)
+unsigned short CalModbusCRC16Fun(const void *puchMsg, unsigned short usDataLen, unsigned char * crc)
 {
     unsigned char *pdata = (unsigned char *)puchMsg;
 	unsigned short uchCRCHi = 0xFF;
     unsigned short uchCRCLo = 0xFF;
     unsigned int uIndex ;
+	unsigned short crcV = 0;
+	
     while (usDataLen--)
     {
         uIndex = uchCRCHi ^ *pdata++ ;
         uchCRCHi = uchCRCLo ^ auchCRCHi[uIndex];
         uchCRCLo = auchCRCLo[uIndex];
     }
-    return ((uchCRCLo << 8) | uchCRCHi);
+	
+	crcV = ((uchCRCLo << 8) | uchCRCHi);
+	
+	if(crc)
+	{
+		*crc++ = uchCRCHi;
+		*crc++ = uchCRCLo;
+	}
+	
+    return crcV;
 }
 
-void CalModbusCRC16Fun2(void *puchMsg, unsigned short usDataLen, void *crc)
-{
-    unsigned char *pdata = (unsigned char *)puchMsg;
-	unsigned char *pcrc = (unsigned char *)crc;
-	unsigned short uchCRCHi = 0xFF;
-    unsigned short uchCRCLo = 0xFF;
-    unsigned int uIndex ;
-    while (usDataLen--)
-    {
-        uIndex = uchCRCHi ^ *pdata++ ;
-        uchCRCHi = uchCRCLo ^ auchCRCHi[uIndex];
-        uchCRCLo = auchCRCLo[uIndex];
-    }
-	*pcrc++ = uchCRCHi;
-	*pcrc++ = uchCRCLo;
-}
 

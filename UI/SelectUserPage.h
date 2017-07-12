@@ -18,7 +18,7 @@ typedef struct UserPage_tag {
 	unsigned short lcdinput[100];									//lcd ‰»ÎΩ‚Œˆ
 }UserPageBuffer;
 
-MyState_TypeDef createSelectUserActivity(Activity * thizActivity, Intent * pram);
+MyRes createSelectUserActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

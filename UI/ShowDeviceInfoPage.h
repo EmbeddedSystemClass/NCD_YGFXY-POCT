@@ -15,7 +15,7 @@ typedef struct ShowDeviceInfoPageBuffer_Tag
 	char tempBuf[100];
 }ShowDeviceInfoPageBuffer;
 
-MyState_TypeDef createDeviceInfoActivity(Activity * thizActivity, Intent * pram);
+MyRes createDeviceInfoActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

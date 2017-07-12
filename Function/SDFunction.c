@@ -67,11 +67,11 @@
 /*********************************************************************************************/
 /*********************************************************************************************/
 
-MyState_TypeDef SavereTestData(ReTestData *reTestData, unsigned char type)
+MyRes SavereTestData(ReTestData *reTestData, unsigned char type)
 {
 	FatfsFileInfo_Def * myfile = NULL;
 	char *buf;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
 	buf = MyMalloc(1024);

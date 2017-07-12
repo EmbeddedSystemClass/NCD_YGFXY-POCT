@@ -5,10 +5,10 @@
 #include	"Define.h"
 #include	"DeviceAdjust.h"
 
-MyState_TypeDef writeDeviceAdjustToFile(DeviceAdjust * deviceAdjust);
-MyState_TypeDef readDeviceAdjustFromFile(DeviceAdjustReadPackge * deviceAdjustReadPackge);
-MyState_TypeDef plusDeviceAdjustHeaderUpLoadIndexToFile(unsigned int index);
-MyState_TypeDef deleteDeviceAdjustFile(void);
+MyRes writeDeviceAdjustToFile(DeviceAdjust * deviceAdjust);
+MyRes readDeviceAdjustFromFile(DeviceAdjustReadPackge * deviceAdjustReadPackge);
+MyRes plusDeviceAdjustHeaderuserUpLoadIndexToFile(unsigned int index);
+MyRes deleteDeviceAdjustFile(void);
 
 #endif
 

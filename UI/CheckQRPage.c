@@ -32,7 +32,7 @@ static void activityHide(void);
 static void activityResume(void);
 static void activityDestroy(void);
 
-static MyState_TypeDef activityBufferMalloc(void);
+static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
 static void clearPageText(void);
@@ -55,7 +55,7 @@ static void calculateResult(void);
 *Author: xsx
 *Date: 2016Äê12ÔÂ20ÈÕ16:21:51
 ***************************************************************************************************/
-MyState_TypeDef createCheckQRActivity(Activity * thizActivity, Intent * pram)
+MyRes createCheckQRActivity(Activity * thizActivity, Intent * pram)
 {
 	if(NULL == thizActivity)
 		return My_Fail;
@@ -169,7 +169,7 @@ static void activityDestroy(void)
 	activityBufferFree();
 }
 
-static MyState_TypeDef activityBufferMalloc(void)
+static MyRes activityBufferMalloc(void)
 {
 	if(NULL == S_CheckQRPageBuffer)
 	{

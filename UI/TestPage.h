@@ -19,7 +19,7 @@ typedef struct TestPageBuffer_tag {
 }TestPageBuffer;
 
 
-MyState_TypeDef createTestActivity(Activity * thizActivity, Intent * pram);
+MyRes createTestActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

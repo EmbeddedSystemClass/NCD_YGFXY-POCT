@@ -5,8 +5,8 @@
 #include	"Define.h"
 #include	"RemoteSoft_Data.h"
 
-MyState_TypeDef WriteRemoteSoftInfo(RemoteSoftInfo * remoteSoftInfo);
-MyState_TypeDef ReadRemoteSoftInfo(RemoteSoftInfo * remoteSoftInfo);
+MyRes WriteRemoteSoftInfo(RemoteSoftInfo * remoteSoftInfo);
+MyRes ReadRemoteSoftInfo(RemoteSoftInfo * remoteSoftInfo);
 
 #endif
 

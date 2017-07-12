@@ -16,7 +16,7 @@ typedef struct ServerSetPageBuffer_tag {
 }ServerSetPageBuffer;
 
 
-MyState_TypeDef createServerSetActivity(Activity * thizActivity, Intent * pram);
+MyRes createServerSetActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

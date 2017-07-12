@@ -22,7 +22,7 @@ typedef struct NetInfoPageBuffer_tag {
 }NetInfoPageBuffer;
 
 
-MyState_TypeDef createNetInfoActivity(Activity * thizActivity, Intent * pram);
+MyRes createNetInfoActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

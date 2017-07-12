@@ -33,7 +33,7 @@
 /*****************************************局部函数声明*************************************/
 static void ReadBasicCodeData(ReadQRCodeBuffer * readQRCodeBuffer);
 static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer);
-static MyState_TypeDef CheckCardIsTimeOut(ReadQRCodeBuffer * readQRCodeBuffer);
+static MyRes CheckCardIsTimeOut(ReadQRCodeBuffer * readQRCodeBuffer);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -299,8 +299,8 @@ static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer)
 	END:
 		if(readQRCodeBuffer->scanresult != CardCodeScanning)
 			return;
-		else if(readQRCodeBuffer->cardQR->CRC16 != CalModbusCRC16Fun1(readQRCodeBuffer->pbuf2 , readQRCodeBuffer->originalCodeLen - 
-			readQRCodeBuffer->tempV1))
+		else if(readQRCodeBuffer->cardQR->CRC16 != CalModbusCRC16Fun(readQRCodeBuffer->pbuf2 , readQRCodeBuffer->originalCodeLen - 
+			readQRCodeBuffer->tempV1, NULL))
 			readQRCodeBuffer->scanresult = CardCodeCRCError;		
 		else if(My_Fail == CheckCardIsTimeOut(readQRCodeBuffer))
 			readQRCodeBuffer->scanresult = CardCodeTimeOut;
@@ -309,7 +309,7 @@ static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer)
 }
 
 
-static MyState_TypeDef CheckCardIsTimeOut(ReadQRCodeBuffer * readQRCodeBuffer)
+static MyRes CheckCardIsTimeOut(ReadQRCodeBuffer * readQRCodeBuffer)
 {
 	if(readQRCodeBuffer)
 	{

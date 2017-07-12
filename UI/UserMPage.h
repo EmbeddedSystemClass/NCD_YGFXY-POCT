@@ -5,20 +5,28 @@
 #include	"UI_Data.h"
 #include	"SystemSet_Data.h"
 #include	"Operator.h"
+#include	"MyLock.h"
+#include	"Timer_Data.h"
 
 typedef struct UserMPageBuffer_tag {
-	unsigned char selectindex;										//选中的索引
 	unsigned char pageindex;										//页面索引
-	unsigned char filemaxitem;							//当前文件保存数据数目
-	unsigned char filemaxpagenum;						//当前文件保存数据的页数
-	Device device;									//选中的人
-	Operator * tempuser;
-	Operator tempnewuser;
+	unsigned char filemaxitem;										//当前文件保存数据数目
+	unsigned char filemaxpagenum;									//当前文件保存数据的页数
+	Device device;
+	Operator operatorCopy[MaxOperatorSize];							//操作人备份
+	Operator * tempOperator;
+	Operator * currentOperator;
+	Operator newOperator;
 	unsigned short lcdinput[100];
 	char buf[100];
+	unsigned short tempV1;
+	unsigned short tempV2;
+	MyLock * myDeviceLock;
+	bool isLocked;
+	Timer timer;
 }UserMPageBuffer;
 
-MyState_TypeDef createUserManagerActivity(Activity * thizActivity, Intent * pram);
+MyRes createUserManagerActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

@@ -54,7 +54,7 @@ void InitLinkStack(LinkStack * linkStack)
 *Author: xsx
 *Date: 2016年12月20日08:44:41
 ***************************************************************************************************/
-MyState_TypeDef StackPush(LinkStack * linkStack, Activity * activity)
+MyRes StackPush(LinkStack * linkStack, Activity * activity)
 {
 	StackNode * stackNode = NULL;
 	
@@ -90,7 +90,7 @@ MyState_TypeDef StackPush(LinkStack * linkStack, Activity * activity)
 *Author: xsx
 *Date: 2016年12月20日08:50:28
 ***************************************************************************************************/
-MyState_TypeDef StackPop(LinkStack * linkStack, bool isResume)
+MyRes StackPop(LinkStack * linkStack, bool isResume)
 {
 	StackNode * stackNode = NULL;
 	
@@ -131,7 +131,7 @@ MyState_TypeDef StackPop(LinkStack * linkStack, bool isResume)
 *Author: xsx
 *Date: 2016年12月20日10:11:25
 ***************************************************************************************************/
-MyState_TypeDef StackTop(LinkStack * linkStack, Activity ** activity)
+MyRes StackTop(LinkStack * linkStack, Activity ** activity)
 {
 
 	//栈空，出栈失败

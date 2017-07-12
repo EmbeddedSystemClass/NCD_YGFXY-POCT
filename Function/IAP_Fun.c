@@ -50,7 +50,7 @@
 *Author: xsx
 *Date: 2017年2月20日14:02:35
 ***************************************************************************************************/
-MyState_TypeDef checkMd5(void)
+MyRes checkMd5(void)
 {
 	RemoteSoftInfo * remoteSoftInfo = NULL;		//读取的固件信息
 	char currentMd5[40];				//当前MD5
@@ -87,7 +87,7 @@ MyState_TypeDef checkMd5(void)
 *Author: xsx
 *Date: 2017年2月21日09:02:28
 ***************************************************************************************************/
-MyState_TypeDef checkNewFirmwareIsSuccessDownload(void)
+MyRes checkNewFirmwareIsSuccessDownload(void)
 {
 	//检查是否有新程序
 	if(My_Pass == checkNewAppFileIsExist())

@@ -20,7 +20,7 @@ typedef struct AdjustLedPageBuffer_tag {
 }AdjustLedPageBuffer;
 
 
-MyState_TypeDef createAdjustLedActivity(Activity * thizActivity, Intent * pram);
+MyRes createAdjustLedActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

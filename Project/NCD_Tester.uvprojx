@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_proj.xsd">
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_projx.xsd">
 
-  <SchemaVersion>1.1</SchemaVersion>
+  <SchemaVersion>2.1</SchemaVersion>
 
   <Header>### uVision Project, (C) Keil Software</Header>
 
@@ -10,33 +10,37 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
+      <pCCUsed>5060528::V5.06 update 5 (build 528)::ARMCC</pCCUsed>
+      <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STM32F407ZG</Device>
+          <Device>STM32F407ZGTx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <Cpu>IRAM(0x20000000-0x2001FFFF) IRAM2(0x10000000-0x1000FFFF) IROM(0x8000000-0x80FFFFF) CLOCK(25000000) CPUTYPE("Cortex-M4") FPU2</Cpu>
+          <PackID>Keil.STM32F4xx_DFP.2.11.0</PackID>
+          <PackURL>http://www.keil.com/pack</PackURL>
+          <Cpu>IRAM(0x20000000,0x20000) IRAM2(0x10000000,0x10000) IROM(0x08000000,0x100000) CPUTYPE("Cortex-M4") FPU2 CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
-          <StartupFile>"Startup\ST\STM32F4xx\startup_stm32f40_41xxx.s" ("STM32F40/41xxx Startup Code")</StartupFile>
-          <FlashDriverDll>UL2CM3(-O207 -S0 -C0 -FO7 -FD20000000 -FC800 -FN1 -FF0STM32F4xx_1024 -FS08000000 -FL0100000)</FlashDriverDll>
-          <DeviceId>6105</DeviceId>
-          <RegisterFile>stm32f4xx.h</RegisterFile>
+          <StartupFile></StartupFile>
+          <FlashDriverDll>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0STM32F4xx_1024 -FS08000000 -FL0100000 -FP0($$Device:STM32F407ZGTx$CMSIS\Flash\STM32F4xx_1024.FLM))</FlashDriverDll>
+          <DeviceId>0</DeviceId>
+          <RegisterFile>$$Device:STM32F407ZGTx$Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h</RegisterFile>
           <MemoryEnv></MemoryEnv>
           <Cmp></Cmp>
           <Asm></Asm>
           <Linker></Linker>
           <OHString></OHString>
           <InfinionOptionDll></InfinionOptionDll>
-          <SLE66CMisc>-DSTM32F40_41xxx</SLE66CMisc>
+          <SLE66CMisc></SLE66CMisc>
           <SLE66AMisc></SLE66AMisc>
           <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>SFD\ST\STM32F4xx\STM32F40x.sfr</SFDFile>
+          <SFDFile>$$Device:STM32F407ZGTx$CMSIS\SVD\STM32F40x.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath></BinPath>
           <IncludePath></IncludePath>
           <LibPath></LibPath>
-          <RegisterFilePath>ST\STM32F4xx\</RegisterFilePath>
-          <DBRegisterFilePath>ST\STM32F4xx\</DBRegisterFilePath>
+          <RegisterFilePath></RegisterFilePath>
+          <DBRegisterFilePath></DBRegisterFilePath>
           <TargetStatus>
             <Error>0</Error>
             <ExitCodeStop>0</ExitCodeStop>
@@ -78,10 +82,12 @@
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name>fromelf.exe --bin -o "$L@L.bin" "#L"</UserProg1Name>
+            <UserProg1Name>D:\Program Files\Keil\ARM\ARMCC\bin\fromelf.exe --bin -o "$L@L.bin" "#L"</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
+            <nStopA1X>0</nStopA1X>
+            <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>0</SelectedForBatchBuild>
           <SVCSIdString></SVCSIdString>
@@ -104,11 +110,11 @@
         </CommonProperty>
         <DllOption>
           <SimDllName>SARMCM3.DLL</SimDllName>
-          <SimDllArguments>-MPU -REMAP</SimDllArguments>
+          <SimDllArguments> -REMAP -MPU</SimDllArguments>
           <SimDlgDll>DCM.DLL</SimDlgDll>
           <SimDlgDllArguments>-pCM4</SimDlgDllArguments>
           <TargetDllName>SARMCM3.DLL</TargetDllName>
-          <TargetDllArguments>-MPU</TargetDllArguments>
+          <TargetDllArguments> -MPU</TargetDllArguments>
           <TargetDlgDll>TCM.DLL</TargetDlgDll>
           <TargetDlgDllArguments>-pCM4</TargetDlgDllArguments>
         </DllOption>
@@ -120,48 +126,6 @@
             <HexOffset>0</HexOffset>
             <Oh166RecLen>16</Oh166RecLen>
           </OPTHX>
-          <Simulator>
-            <UseSimulator>0</UseSimulator>
-            <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
-            <RunToMain>1</RunToMain>
-            <RestoreBreakpoints>1</RestoreBreakpoints>
-            <RestoreWatchpoints>1</RestoreWatchpoints>
-            <RestoreMemoryDisplay>1</RestoreMemoryDisplay>
-            <RestoreFunctions>1</RestoreFunctions>
-            <RestoreToolbox>1</RestoreToolbox>
-            <LimitSpeedToRealTime>0</LimitSpeedToRealTime>
-            <RestoreSysVw>1</RestoreSysVw>
-          </Simulator>
-          <Target>
-            <UseTarget>1</UseTarget>
-            <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
-            <RunToMain>1</RunToMain>
-            <RestoreBreakpoints>1</RestoreBreakpoints>
-            <RestoreWatchpoints>1</RestoreWatchpoints>
-            <RestoreMemoryDisplay>1</RestoreMemoryDisplay>
-            <RestoreFunctions>0</RestoreFunctions>
-            <RestoreToolbox>1</RestoreToolbox>
-            <RestoreTracepoints>1</RestoreTracepoints>
-            <RestoreSysVw>1</RestoreSysVw>
-            <UsePdscDebugDescription>0</UsePdscDebugDescription>
-          </Target>
-          <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>6</TargetSelection>
-          <SimDlls>
-            <CpuDll></CpuDll>
-            <CpuDllArguments></CpuDllArguments>
-            <PeripheralDll></PeripheralDll>
-            <PeripheralDllArguments></PeripheralDllArguments>
-            <InitializationFile></InitializationFile>
-          </SimDlls>
-          <TargetDlls>
-            <CpuDll></CpuDll>
-            <CpuDllArguments></CpuDllArguments>
-            <PeripheralDll></PeripheralDll>
-            <PeripheralDllArguments></PeripheralDllArguments>
-            <InitializationFile></InitializationFile>
-            <Driver>Segger\JL2CM3.dll</Driver>
-          </TargetDlls>
         </DebugOption>
         <Utilities>
           <Flash1>
@@ -174,7 +138,7 @@
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3>"" ()</Flash3>
+          <Flash3></Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -226,8 +190,9 @@
             <useUlib>1</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
+            <nSecure>0</nSecure>
             <RoSelD>3</RoSelD>
-            <RwSelD>3</RwSelD>
+            <RwSelD>4</RwSelD>
             <CodeSel>0</CodeSel>
             <OptFeed>0</OptFeed>
             <NoZi1>0</NoZi1>
@@ -360,11 +325,18 @@
             <uSurpInc>0</uSurpInc>
             <uC99>1</uC99>
             <useXO>0</useXO>
+            <v6Lang>1</v6Lang>
+            <v6LangP>1</v6LangP>
+            <vShortEn>1</vShortEn>
+            <vShortWch>1</vShortWch>
+            <v6Lto>0</v6Lto>
+            <v6WtE>0</v6WtE>
+            <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>STM32F4XX,USE_STDPERIPH_DRIVER</Define>
+              <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\AppLunch;..\COM;..\Datas;..\Function;..\HardwareDriver;..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\Libraries\STM32F4x7_ETH_Driver\inc;..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\Task;..\ThirdParty\Fatfs\src;..\ThirdParty\lwip-1.4.1\src\include;..\ThirdParty\lwip-1.4.1\src\include\ipv4;..\ThirdParty\lwip-1.4.1\src\include\netif;..\ThirdParty\lwip-1.4.1\src\include\lwip;..\ThirdParty\lwip-1.4.1\port\STM32F4x7\FreeRTOS;..\ThirdParty\lwip-1.4.1\port\STM32F4x7;..\ThirdParty\lwip-1.4.1\User;..\ThirdParty\cJSON-master;..\UI;..\ThirdParty\FreeRTOS\inc;..\Daos;..\Entity</IncludePath>
+              <IncludePath>..\AppLunch;..\COM;..\Datas;..\Function;..\HardwareDriver;..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\Libraries\STM32F4x7_ETH_Driver\inc;..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\Task;..\ThirdParty\Fatfs\src;..\ThirdParty\lwip-1.4.1\src\include;..\ThirdParty\lwip-1.4.1\src\include\ipv4;..\ThirdParty\lwip-1.4.1\src\include\netif;..\ThirdParty\lwip-1.4.1\src\include\lwip;..\ThirdParty\lwip-1.4.1\port\STM32F4x7\FreeRTOS;..\ThirdParty\lwip-1.4.1\port\STM32F4x7;..\ThirdParty\lwip-1.4.1\User;..\ThirdParty\cJSON-master;..\UI;..\ThirdParty\FreeRTOS\inc;..\Daos;..\Entity;..\Libraries\CMSIS\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -377,6 +349,7 @@
             <NoWarn>0</NoWarn>
             <uSurpInc>0</uSurpInc>
             <useXO>0</useXO>
+            <uClangAs>0</uClangAs>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define></Define>
@@ -987,6 +960,11 @@
               <FileType>5</FileType>
               <FilePath>..\Entity\DeviceQuality.h</FilePath>
             </File>
+            <File>
+              <FileName>RemoteSoftInfo.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\RemoteSoftInfo.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1091,6 +1069,11 @@
               <FileName>DeviceQualityDao.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Daos\DeviceQualityDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>RecordDataDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\RecordDataDao.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1207,6 +1190,16 @@
               <FileType>1</FileType>
               <FilePath>..\COM\Utf8ToGBK.c</FilePath>
             </File>
+            <File>
+              <FileName>HttpDownSoft.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\COM\HttpDownSoft.c</FilePath>
+            </File>
+            <File>
+              <FileName>MyLock.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\COM\MyLock.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1273,24 +1266,9 @@
               <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_exti.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_flash.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_fsmc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_fsmc.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f4xx_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_gpio.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_i2c.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_i2c.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_iwdg.c</FileName>
@@ -1306,16 +1284,6 @@
               <FileName>stm32f4xx_rcc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_rcc.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_rtc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_rtc.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_spdifrx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_spdifrx.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_spi.c</FileName>
@@ -1557,5 +1525,11 @@
       </Groups>
     </Target>
   </Targets>
+
+  <RTE>
+    <apis/>
+    <components/>
+    <files/>
+  </RTE>
 
 </Project>

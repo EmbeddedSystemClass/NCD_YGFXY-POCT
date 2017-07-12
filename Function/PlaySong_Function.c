@@ -19,7 +19,7 @@ AudioPlayInfo * myAudioPlayInfo = NULL;
 /*****************************************局部函数*************************************/
 static void ChangeOutputDataSource(void);
 static void AudioDataSend(void);
-static MyState_TypeDef wav_filldata(void *buf , unsigned int len);
+static MyRes wav_filldata(void *buf , unsigned int len);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -29,10 +29,10 @@ static MyState_TypeDef wav_filldata(void *buf , unsigned int len);
 
 
 
-static MyState_TypeDef wav_filldata(void *buf , unsigned int len)
+static MyRes wav_filldata(void *buf , unsigned int len)
 {
 	unsigned short i;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 
 	unsigned char *p = (unsigned char *)buf;
 
@@ -61,7 +61,7 @@ static void ChangeOutputDataSource(void)
 
 static void AudioDataSend(void)
 {
-	MyState_TypeDef readstatues =  My_Pass;
+	MyRes readstatues =  My_Pass;
 	
 	if(myAudioPlayInfo)
 	{

@@ -4,10 +4,10 @@
 
 #include	"Define.h"
 
-MyState_TypeDef SaveWifiData(WIFI_Def * wifi);
-MyState_TypeDef ReadWifiData(WIFI_Def * wifi);
-MyState_TypeDef deleteWifi(WIFI_Def * wifi);
-MyState_TypeDef ClearWifi(void);
+MyRes SaveWifiData(WIFI_Def * wifi);
+MyRes ReadWifiData(WIFI_Def * wifi);
+MyRes deleteWifi(WIFI_Def * wifi);
+MyRes ClearWifi(void);
 #endif
 
 /****************************************end of file************************************************/

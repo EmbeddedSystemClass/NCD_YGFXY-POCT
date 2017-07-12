@@ -1,15 +1,13 @@
 /******************************************************************************************/
 /*****************************************头文件*******************************************/
-#if 0
 
 #include	"SetDeviceInfoPage.h"
 
 #include	"LCD_Driver.h"
 #include	"MyMem.h"
-#include	"ShowDeviceInfoPage.h"
 #include	"System_Data.h"
-#include	"SystemSet_Dao.h"
-#include	"SleepPage.h"
+#include	"DeviceDao.h"
+#include	"CRC16.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -20,7 +18,7 @@
 
 /******************************************************************************************/
 /*****************************************局部变量声明*************************************/
-static SetDeviceInfoPageBuffer * S_SetDeviceInfoPageBuffer = NULL;
+static SetDeviceInfoPageBuffer * page = NULL;
 /******************************************************************************************/
 /*****************************************局部函数声明*************************************/
 static void activityStart(void);
@@ -29,10 +27,11 @@ static void activityFresh(void);
 static void activityHide(void);
 static void activityResume(void);
 static void activityDestroy(void);
-static MyState_TypeDef activityBufferMalloc(void);
+static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
 static void showDeviceInfoText(void);
+static void clearDeviceInfoText(void);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -48,7 +47,7 @@ static void showDeviceInfoText(void);
 *Author: xsx
 *Date: 2016年12月21日09:00:09
 ***************************************************************************************************/
-MyState_TypeDef createSetDeviceInfoActivity(Activity * thizActivity, Intent * pram)
+MyRes createSetDeviceInfoActivity(Activity * thizActivity, Intent * pram)
 {
 	if(NULL == thizActivity)
 		return My_Fail;
@@ -74,16 +73,11 @@ MyState_TypeDef createSetDeviceInfoActivity(Activity * thizActivity, Intent * pr
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_SetDeviceInfoPageBuffer)
-	{
-		copyGBSystemSetData(&(S_SetDeviceInfoPageBuffer->systemSetData));
-		
-		memcpy(&(S_SetDeviceInfoPageBuffer->user), &(S_SetDeviceInfoPageBuffer->systemSetData.device.deviceuser), sizeof(User_Type));
-		
-		memcpy(S_SetDeviceInfoPageBuffer->deviceunit, S_SetDeviceInfoPageBuffer->systemSetData.device.deviceunit, MaxDeviceUnitLen);
-		
-		showDeviceInfoText();
-	}
+	page->myDeviceLock = getMyDeviceLock();
+	page->isLocked = false;
+	timer_set(&(page->timer), 1);
+	
+	clearDeviceInfoText();
 	
 	SelectPage(102);
 }
@@ -99,87 +93,76 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(S_SetDeviceInfoPageBuffer)
+	/*命令*/
+	page->lcdinput[0] = pbuf[4];
+	page->lcdinput[0] = (page->lcdinput[0]<<8) + pbuf[5];
+		
+	/*返回*/
+	if(page->lcdinput[0] == 0x1B00)
 	{
-		/*命令*/
-		S_SetDeviceInfoPageBuffer->lcdinput[0] = pbuf[4];
-		S_SetDeviceInfoPageBuffer->lcdinput[0] = (S_SetDeviceInfoPageBuffer->lcdinput[0]<<8) + pbuf[5];
+		backToFatherActivity();
+	}
+	/*确认*/
+	else if(page->lcdinput[0] == 0x1B01)
+	{			
+		if(page->ismodify && page->isLocked)
+		{		
+			memcpy(&(page->device.operator), &(page->operator), OneOperatorStructSize);
 		
-		/*返回*/
-		if(S_SetDeviceInfoPageBuffer->lcdinput[0] == 0x1B00)
-		{
-			backToFatherActivity();
-		}
-		/*确认*/
-		else if(S_SetDeviceInfoPageBuffer->lcdinput[0] == 0x1B01)
-		{			
-			if(S_SetDeviceInfoPageBuffer->ismodify == 1)
+			memcpy(page->device.addr, page->deviceunit, DeviceAddrLen);
+			
+			page->device.crc = CalModbusCRC16Fun(&(page->device), DeviceStructCrcSize, NULL);
+			if(My_Pass == SaveDeviceToFile(&page->device))
 			{
-				copyGBSystemSetData(&(S_SetDeviceInfoPageBuffer->systemSetData));
-		
-				memcpy(&(S_SetDeviceInfoPageBuffer->systemSetData.device.deviceuser), &(S_SetDeviceInfoPageBuffer->user), sizeof(User_Type));
-		
-				memcpy(S_SetDeviceInfoPageBuffer->systemSetData.device.deviceunit, S_SetDeviceInfoPageBuffer->deviceunit, MaxDeviceUnitLen);
-				
-				S_SetDeviceInfoPageBuffer->systemSetData.device.isnew = true;
-				if(My_Pass == SaveSystemSetData(&(S_SetDeviceInfoPageBuffer->systemSetData)))
-				{
-					SendKeyCode(1);
-					S_SetDeviceInfoPageBuffer->ismodify = 0;
-				}
-				else
-					SendKeyCode(2);
+				SendKeyCode(1);
+				page->ismodify = false;
+				backToFatherActivity();
 			}
+			else
+				SendKeyCode(2);
 		}
-		/*姓名*/
-		else if(S_SetDeviceInfoPageBuffer->lcdinput[0] == 0x1B10)
-		{
-			memset(S_SetDeviceInfoPageBuffer->user.user_name, 0, MaxNameLen);
-			memcpy(S_SetDeviceInfoPageBuffer->user.user_name, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
-			S_SetDeviceInfoPageBuffer->ismodify = 1;
-		}
-		/*年龄*/
-		else if(S_SetDeviceInfoPageBuffer->lcdinput[0] == 0x1B20)
-		{
-			memset(S_SetDeviceInfoPageBuffer->user.user_age, 0, MaxAgeLen);
-			memcpy(S_SetDeviceInfoPageBuffer->user.user_age, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
-			S_SetDeviceInfoPageBuffer->ismodify = 1;
-		}
-		/*性别*/
-		else if(S_SetDeviceInfoPageBuffer->lcdinput[0] == 0x1B30)
-		{
-			memset(S_SetDeviceInfoPageBuffer->user.user_sex, 0, MaxSexLen);
-			memcpy(S_SetDeviceInfoPageBuffer->user.user_sex, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
-			S_SetDeviceInfoPageBuffer->ismodify = 1;
-		}
-		/*联系方式*/
-		else if(S_SetDeviceInfoPageBuffer->lcdinput[0] == 0x1B40)
-		{
-			memset(S_SetDeviceInfoPageBuffer->user.user_phone, 0, MaxPhoneLen);
-			memcpy(S_SetDeviceInfoPageBuffer->user.user_phone, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
-			S_SetDeviceInfoPageBuffer->ismodify = 1;
-		}
-		/*职位*/
-		else if(S_SetDeviceInfoPageBuffer->lcdinput[0] == 0x1B50)
-		{
-			memset(S_SetDeviceInfoPageBuffer->user.user_job, 0, MaxJobLen);
-			memcpy(S_SetDeviceInfoPageBuffer->user.user_job, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
-			S_SetDeviceInfoPageBuffer->ismodify = 1;
-		}
-		/*备注*/
-		else if(S_SetDeviceInfoPageBuffer->lcdinput[0] == 0x1B60)
-		{
-			memset(S_SetDeviceInfoPageBuffer->user.user_desc, 0, MaxDescLen);
-			memcpy(S_SetDeviceInfoPageBuffer->user.user_desc, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
-			S_SetDeviceInfoPageBuffer->ismodify = 1;
-		}
-		/*设备使用地址*/
-		else if(S_SetDeviceInfoPageBuffer->lcdinput[0] == 0x1B70)
-		{
-			memset(S_SetDeviceInfoPageBuffer->deviceunit, 0, MaxDeviceUnitLen);
-			memcpy(S_SetDeviceInfoPageBuffer->deviceunit, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
-			S_SetDeviceInfoPageBuffer->ismodify = 1;
-		}
+	}
+	/*姓名*/
+	else if(page->lcdinput[0] == 0x1B10)
+	{
+		getLcdInputData(page->operator.name, &pbuf[7]);
+		page->ismodify = true;
+	}
+	/*年龄*/
+	else if(page->lcdinput[0] == 0x1B20)
+	{
+		getLcdInputData(page->operator.age, &pbuf[7]);
+		page->ismodify = true;
+	}
+	/*性别*/
+	else if(page->lcdinput[0] == 0x1B30)
+	{
+		getLcdInputData(page->operator.sex, &pbuf[7]);
+		page->ismodify = true;
+	}
+	/*联系方式*/
+	else if(page->lcdinput[0] == 0x1B40)
+	{
+		getLcdInputData(page->operator.phone, &pbuf[7]);
+		page->ismodify = true;
+	}
+	/*职位*/
+	else if(page->lcdinput[0] == 0x1B50)
+	{
+		getLcdInputData(page->operator.job, &pbuf[7]);
+		page->ismodify = true;
+	}
+	/*备注*/
+	else if(page->lcdinput[0] == 0x1B60)
+	{
+		getLcdInputData(page->operator.department, &pbuf[7]);
+		page->ismodify = true;
+	}
+	/*设备使用地址*/
+	else if(page->lcdinput[0] == 0x1B70)
+	{
+		getLcdInputData(page->deviceunit, &pbuf[7]);
+		page->ismodify = true;
 	}
 }
 
@@ -194,9 +177,24 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(S_SetDeviceInfoPageBuffer)
+	if(TimeOut == timer_expired(&(page->timer)))
 	{
-
+		//先给设备信息文件上锁，防止其他线程修改数据
+		if((page->isLocked == false) && (My_Pass == LockObject(page->myDeviceLock, &page, 1)))
+		{
+			/*读取所有操作人*/
+			ReadDeviceFromFile(&(page->device));
+			
+			//将数据拷贝到临时数据区
+			memcpy(&page->operator, &page->device.operator, OneOperatorStructSize);
+			memcpy(page->deviceunit, page->device.addr, DeviceAddrLen);
+			
+			showDeviceInfoText();
+			
+			page->isLocked = true;
+		}
+		
+		timer_restart(&(page->timer));
 	}
 }
 
@@ -239,6 +237,8 @@ static void activityResume(void)
 ***************************************************************************************************/
 static void activityDestroy(void)
 {
+	UnLockObject(page->myDeviceLock, &page);
+	
 	activityBufferFree();
 }
 
@@ -251,15 +251,15 @@ static void activityDestroy(void)
 *Author: xsx
 *Date: 
 ***************************************************************************************************/
-static MyState_TypeDef activityBufferMalloc(void)
+static MyRes activityBufferMalloc(void)
 {
-	if(NULL == S_SetDeviceInfoPageBuffer)
+	if(NULL == page)
 	{
-		S_SetDeviceInfoPageBuffer = MyMalloc(sizeof(SetDeviceInfoPageBuffer));
+		page = MyMalloc(sizeof(SetDeviceInfoPageBuffer));
 		
-		if(S_SetDeviceInfoPageBuffer)
+		if(page)
 		{
-			memset(S_SetDeviceInfoPageBuffer, 0, sizeof(SetDeviceInfoPageBuffer));
+			memset(page, 0, sizeof(SetDeviceInfoPageBuffer));
 	
 			return My_Pass;
 		}
@@ -281,32 +281,48 @@ static MyState_TypeDef activityBufferMalloc(void)
 ***************************************************************************************************/
 static void activityBufferFree(void)
 {
-	MyFree(S_SetDeviceInfoPageBuffer);
-	S_SetDeviceInfoPageBuffer = NULL;
+	MyFree(page);
+	page = NULL;
 }
 
 static void showDeviceInfoText(void)
 {
-	sprintf(S_SetDeviceInfoPageBuffer->tempBuf, "%s\0", S_SetDeviceInfoPageBuffer->user.user_name);
-	DisText(0x1b10, S_SetDeviceInfoPageBuffer->tempBuf, strlen(S_SetDeviceInfoPageBuffer->tempBuf)+1);
+	snprintf(page->tempBuf, 50, "%s", page->device.operator.name);
+	DisText(0x1b10, page->tempBuf, strlen(page->tempBuf)+1);
 
-	sprintf(S_SetDeviceInfoPageBuffer->tempBuf, "%s\0", S_SetDeviceInfoPageBuffer->user.user_age);
-	DisText(0x1b20, S_SetDeviceInfoPageBuffer->tempBuf, strlen(S_SetDeviceInfoPageBuffer->tempBuf)+1);
+	snprintf(page->tempBuf, 50, "%s\0", page->device.operator.age);
+	DisText(0x1b20, page->tempBuf, strlen(page->tempBuf)+1);
 
-	sprintf(S_SetDeviceInfoPageBuffer->tempBuf, "%s\0", S_SetDeviceInfoPageBuffer->user.user_sex);
-	DisText(0x1b30, S_SetDeviceInfoPageBuffer->tempBuf, strlen(S_SetDeviceInfoPageBuffer->tempBuf)+1);
+	snprintf(page->tempBuf, 50, "%s\0", page->device.operator.sex);
+	DisText(0x1b30, page->tempBuf, strlen(page->tempBuf)+1);
 
-	sprintf(S_SetDeviceInfoPageBuffer->tempBuf, "%s\0", S_SetDeviceInfoPageBuffer->user.user_phone);
-	DisText(0x1b40, S_SetDeviceInfoPageBuffer->tempBuf, strlen(S_SetDeviceInfoPageBuffer->tempBuf)+1);
+	snprintf(page->tempBuf, 50, "%s\0", page->device.operator.phone);
+	DisText(0x1b40, page->tempBuf, strlen(page->tempBuf)+1);
 	
-	sprintf(S_SetDeviceInfoPageBuffer->tempBuf, "%s\0", S_SetDeviceInfoPageBuffer->user.user_job);
-	DisText(0x1b50, S_SetDeviceInfoPageBuffer->tempBuf, strlen(S_SetDeviceInfoPageBuffer->tempBuf)+1);
+	snprintf(page->tempBuf, 50, "%s\0", page->device.operator.job);
+	DisText(0x1b50, page->tempBuf, strlen(page->tempBuf)+1);
 
-	sprintf(S_SetDeviceInfoPageBuffer->tempBuf, "%s\0", S_SetDeviceInfoPageBuffer->user.user_desc);
-	DisText(0x1b60, S_SetDeviceInfoPageBuffer->tempBuf, strlen(S_SetDeviceInfoPageBuffer->tempBuf)+1);
+	snprintf(page->tempBuf, 50, "%s\0", page->device.operator.department);
+	DisText(0x1b60, page->tempBuf, strlen(page->tempBuf)+1);
 	
-	sprintf(S_SetDeviceInfoPageBuffer->tempBuf, "%s\0", S_SetDeviceInfoPageBuffer->deviceunit);
-	DisText(0x1b70, S_SetDeviceInfoPageBuffer->tempBuf, strlen(S_SetDeviceInfoPageBuffer->tempBuf)+1);
+	snprintf(page->tempBuf, 100, "%s-%s", page->device.department, page->device.addr);
+	DisText(0x1b70, page->tempBuf, strlen(page->tempBuf)+1);
 }
 
-#endif
+static void clearDeviceInfoText(void)
+{
+	ClearText(0x1b10);
+
+	ClearText(0x1b20);
+
+	ClearText(0x1b30);
+
+	ClearText(0x1b40);
+	
+	ClearText(0x1b50);
+
+	ClearText(0x1b60);
+	
+	ClearText(0x1b70);
+}
+

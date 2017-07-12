@@ -5,10 +5,10 @@
 #include	"Define.h"
 #include	"DeviceQuality.h"
 
-MyState_TypeDef writeDeviceQualityToFile(DeviceQuality * deviceQuality);
-MyState_TypeDef readDeviceQualityFromFile(DeviceQualityReadPackge * readPackge);
-MyState_TypeDef plusDeviceQualityHeaderUpLoadIndexToFile(unsigned int index);
-MyState_TypeDef deleteDeviceQualityFile(void);
+MyRes writeDeviceQualityToFile(DeviceQuality * deviceQuality);
+MyRes readDeviceQualityFromFile(DeviceQualityReadPackge * readPackge);
+MyRes plusDeviceQualityHeaderuserUpLoadIndexToFile(unsigned int index);
+MyRes deleteDeviceQualityFile(void);
 
 #endif
 

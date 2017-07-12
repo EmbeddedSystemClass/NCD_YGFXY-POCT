@@ -5,36 +5,38 @@
 #include 	"FreeRTOS.h"
 #include	"ff.h"
 
+/*定义设备类型*/
+#define		DeviceType		DeviceManual
 
-#define		AdminPassWord		"201300\0"								//管理员密码，用于修改设备id
-#define		AdjustPassWord		"201301\0"								//校准密码
-#define		TestPassWord		"201302\0"								//老化测试密码
-#define		CheckQRPassWord		"201303\0"								//测试二维码密码
-#define		AdjLedPassWord		"201304\0"								//校准led密码
-#define		FactoryResetPassWord	"201305\0"							//恢复出厂设置密码
-#define		ChangeValueShowTypePassWord	"201306\0"						//切换结果显示模式，是否显示真实值
-#define		UnlockLCDPassWord	"201307\0"								//解锁屏幕一次
+/*第一代机器，手动加样，有外置8个排队位，排队需人工参与*/
+#define		DeviceManual			1
+/*第二代机器，半自动，外置转盘，手动加样，自动排队测试，无需人工参与*/
+#define		DeviceSemiAutomatic		2
 
-/***************************************************************************************************/
-/***************************************************************************************************/
-/*****************************************软件版本**************************************************/
-/***************************************************************************************************/
-/***************************************************************************************************/
+/*设置中各个功能的密码*/
+#define		AdminPassWord				"201300\0"								//管理员密码，用于修改设备id
+#define		AdjustPassWord				"201301\0"								//校准密码
+#define		TestPassWord				"201302\0"								//老化测试密码
+#define		CheckQRPassWord				"201303\0"								//测试二维码密码
+#define		AdjLedPassWord				"201304\0"								//校准led密码
+#define		FactoryResetPassWord		"201305\0"								//恢复出厂设置密码
+#define		ChangeValueShowTypePassWord	"201306\0"								//切换结果显示模式，是否显示真实值
+#define		UnlockLCDPassWord			"201307\0"								//解锁屏幕一次
+
 /*V1.0.03*/
-#define	GB_SoftVersion	(unsigned short)1045
+#define	GB_SoftVersion	(unsigned short)500
 #define	GB_SoftVersion_Build	"Build17050101\0"
 
-#define	GB_DeviceCode	"ncd-ygfxy\0"
-
 /*服务器信息*/
-#define	GB_ServerIp_1		116
-#define	GB_ServerIp_2		62
-#define	GB_ServerIp_3		108
-#define	GB_ServerIp_4		201
-
-#define	GB_ServerPort		8080
+#define	NCD_ServerIp_1		116
+#define	NCD_ServerIp_2		62
+#define	NCD_ServerIp_3		108
+#define	NCD_ServerIp_4		201
+#define NCD_ServerPort		8080
 
 #define	HttpResponeOK				"HTTP/1.1 200 OK\0"
+
+//poct
 #define	ReadTimeUrl					"DeviceReadTime\0"
 #define	QueryDeviceByDeviceIdUrl	"DeviceQueryDeviceByDeviceId\0"
 #define	UpLoadDeviceAdjustUrl		"UpLoadDeviceAdjust\0"
@@ -43,22 +45,31 @@
 #define	UpLoadDeviceMaintenanceUrl	"UpLoadDeviceMaintenance\0"
 #define	UpLoadDeviceQualityUrl		"UpLoadDeviceQuality\0"
 
+//ncd server
+#define	NcdUpLoadYGFXYDataUrl		"UpLoadYGFXY\0"
+#define	QueryRemoteSoftVersionUrl	"QuerySoftInfo\0"
+#define	DownRemoteSoftFileUrl		"DownloadSoftFile\0"
 
 /*SD卡文件名*/
 #define	TestDataFileName			"0:/TD.ncd\0"
+#define	DeviceFileName				"0:/Device.ncd\0"
 #define	DeviceAdjustFileName		"0:/Dadj.ncd\0"
 #define	DeviceErrorFileName			"0:/Derr.ncd\0"
 #define	DeviceMainenanceFileName	"0:/Dmai.ncd\0"
 #define	DeviceQualityFileName		"0:/Dqua.ncd\0"
 
+
+#define	Char_r		'\r'
+#define	Char_n		'\n'
+#define	Char_r_n	"\r\n"
 /**********************************************************************************************************/
 /******************************************操作结果变量*************************************************/
 /**********************************************************************************************************/
 typedef enum
 { 
-	My_Pass = pdPASS,		//操作成功
+	My_Pass = pdPASS,			//操作成功
 	My_Fail = pdFAIL			//操作失败
-}MyState_TypeDef;
+}MyRes;
 
 typedef enum
 { 
@@ -240,7 +251,8 @@ typedef struct PageRequest_tag {
 typedef struct
 {
 	unsigned int itemSize;
-	unsigned int uploadIndex;
+	unsigned int userUpLoadIndex;
+	unsigned int ncdUpLoadIndex;
 	unsigned short crc;
 }DeviceRecordHeader;
 #pragma pack()

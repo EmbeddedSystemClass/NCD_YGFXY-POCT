@@ -11,7 +11,7 @@ typedef struct SleepPageBuffer_tag {
 }SleepPageBuffer;
 
 
-MyState_TypeDef createSleepActivity(Activity * thizActivity, Intent * pram);
+MyRes createSleepActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

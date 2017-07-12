@@ -17,7 +17,7 @@ typedef struct OtherSetPageBuffer_tag {
 	Basic_ICO ico;
 }OtherSetPageBuffer;
 
-MyState_TypeDef createOtherSetActivity(Activity * thizActivity, Intent * pram);
+MyRes createOtherSetActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

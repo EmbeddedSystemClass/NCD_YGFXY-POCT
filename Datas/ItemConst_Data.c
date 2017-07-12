@@ -71,7 +71,7 @@ const ItemConstData GB_ItemConstData[ItemConstDataNum]=
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-MyState_TypeDef getItemConstData(ItemConstData * itemConstData, char * itemName)
+MyRes getItemConstData(ItemConstData * itemConstData, char * itemName)
 {
 	unsigned char i=0;
 	

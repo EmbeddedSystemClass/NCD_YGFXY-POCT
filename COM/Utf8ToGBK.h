@@ -3,7 +3,7 @@
 
 #include	"Define.h"
 
-MyState_TypeDef utf8ConvertToGBK(void * utf8Str, unsigned short utf8StrLen, void * gbkBuffer, unsigned short * gbkStrLen);
+MyRes utf8ConvertToGBK(void * utf8Str, unsigned short utf8StrLen, void * gbkBuffer, unsigned int * gbkStrLen);
 
 #endif
 

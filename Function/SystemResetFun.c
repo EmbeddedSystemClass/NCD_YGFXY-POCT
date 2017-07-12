@@ -13,6 +13,12 @@
 #include	"SystemSet_Dao.h"
 #include	"DeviceDao.h"
 #include	"WifiDao.h"
+#include	"DeviceQualityDao.h"
+#include	"DeviceMaintenanceDao.h"
+#include	"DeviceErrorDao.h"
+#include	"DeviceAdjustDao.h"
+#include	"TestDataDao.h"
+#include	"RecordDataDao.h"
 
 #include	"SystemSet_Data.h"
 
@@ -42,7 +48,7 @@
 *Author: xsx
 *Date: 2017年2月16日11:20:46
 ***************************************************************************************************/
-MyState_TypeDef SystemReset(void)
+MyRes SystemReset(void)
 {
 	SystemSetData * systemSetData = NULL;
 	
@@ -83,6 +89,21 @@ MyState_TypeDef SystemReset(void)
 	
 	//删除wifi数据
 	if(My_Fail == ClearWifi())
+		return My_Fail;
+	
+	if(My_Fail == deleteRecordDataFile(TestDataFileName))
+		return My_Fail;
+	
+	if(My_Fail == deleteDeviceAdjustFile())
+		return My_Fail;
+	
+	if(My_Fail == deleteDeviceErrorFile())
+		return My_Fail;
+	
+	if(My_Fail == deleteDeviceMaintenanceFile())
+		return My_Fail;
+	
+	if(My_Fail == deleteDeviceQualityFile())
 		return My_Fail;
 	
 	return My_Pass;

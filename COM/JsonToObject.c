@@ -42,11 +42,11 @@
 *Author:  xsx
 *Date: 2017Äê6ÔÂ1ÈÕ 15:13:29
 ***************************************************************************************************/
-MyState_TypeDef ParseJsonToDateTime(const char * jsonStr, DateTime * dateTime)
+MyRes ParseJsonToDateTime(const char * jsonStr, DateTime * dateTime)
 {
 	cJSON * json = NULL;
 	cJSON * tempJson = NULL;
-	MyState_TypeDef status = My_Fail;
+	MyRes status = My_Fail;
 	
 	if(jsonStr && dateTime)
 	{
@@ -116,13 +116,13 @@ MyState_TypeDef ParseJsonToDateTime(const char * jsonStr, DateTime * dateTime)
 *Author:  xsx
 *Date: 
 ***************************************************************************************************/
-MyState_TypeDef ParseJsonToDevice(const char * jsonStr, Device * device)
+MyRes ParseJsonToDevice(const char * jsonStr, Device * device)
 {
 	cJSON * json = NULL;
 	cJSON * tempJson1 = NULL;
 	cJSON * tempJson2 = NULL;
 	unsigned char size = 0, i;
-	MyState_TypeDef status = My_Fail;
+	MyRes status = My_Fail;
 	
 	if(jsonStr && device)
 	{
@@ -181,7 +181,7 @@ MyState_TypeDef ParseJsonToDevice(const char * jsonStr, Device * device)
 			else
 				goto END;
 			
-			device->crc = CalModbusCRC16Fun1(device, DeviceStructCrcSize);
+			device->crc = CalModbusCRC16Fun(device, DeviceStructCrcSize, NULL);
 			
 			status = My_Pass;
 		}
@@ -193,11 +193,11 @@ MyState_TypeDef ParseJsonToDevice(const char * jsonStr, Device * device)
 		return status;
 }
 
-MyState_TypeDef ParseJsonToOperator(cJSON * json, Operator * opeartor)
+MyRes ParseJsonToOperator(cJSON * json, Operator * opeartor)
 {
 	cJSON * tempJson1 = NULL;
 	cJSON * tempJson2 = NULL;
-	MyState_TypeDef status = My_Fail;
+	MyRes status = My_Fail;
 	
 	if(json && opeartor)
 	{
@@ -256,9 +256,44 @@ MyState_TypeDef ParseJsonToOperator(cJSON * json, Operator * opeartor)
 		else
 			goto END;
 		
-		opeartor->crc = CalModbusCRC16Fun1(opeartor, OneOperatorStructSizeWithOutCrc);
+		opeartor->crc = CalModbusCRC16Fun(opeartor, OneOperatorStructCrcSize, NULL);
 		
 		status = My_Pass;
+	}
+
+	END:
+		return status;
+}
+
+MyRes ParseJsonToRemoteSoftInfo(const char * jsonStr, RemoteSoftInfo * remoteSoftInfo)
+{
+	cJSON * json = NULL;
+	cJSON * tempJson1 = NULL;
+	MyRes status = My_Fail;
+	
+	if(jsonStr && remoteSoftInfo)
+	{
+		json = cJSON_Parse(jsonStr);
+		if(json)
+		{
+			//version
+			tempJson1 = cJSON_GetObjectItem(json, "version");
+			if(tempJson1)
+			{
+				remoteSoftInfo->RemoteFirmwareVersion = tempJson1->valueint;
+			}
+			else
+				goto END;
+			
+			//md5
+			tempJson1 = cJSON_GetObjectItem(json, "md5");
+			if(tempJson1)
+				memcpy(remoteSoftInfo->md5, tempJson1->valuestring, strlen(tempJson1->valuestring)+1);
+			else
+				goto END;
+
+			status = My_Pass;
+		}
 	}
 
 	END:

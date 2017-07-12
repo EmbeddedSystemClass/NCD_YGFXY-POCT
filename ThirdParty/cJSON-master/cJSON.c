@@ -50,13 +50,16 @@ static void (*cJSON_free)(void *ptr) = MyFree;
 
 static char* cJSON_strdup(const char* str)
 {
-      size_t len;
-      char* copy;
+	size_t len;
+	char* copy;
 
-      len = strlen(str) + 1;
-      if (!(copy = (char*)cJSON_malloc(len))) return 0;
-      memcpy(copy,str,len);
-      return copy;
+	len = strlen(str) + 1;
+	copy = (char*)cJSON_malloc(len);
+	if (copy == NULL) 
+		return 0;
+	
+	memcpy(copy,str,len);
+	return copy;
 }
 
 void cJSON_InitHooks(cJSON_Hooks* hooks)
@@ -271,9 +274,14 @@ static char *print_string_ptr(const char *str,printbuffer *p)
 	if (!flag)
 	{
 		len=ptr-str;
-		if (p) out=ensure(p,len+3);
-		else		out=(char*)cJSON_malloc(len+3);
-		if (!out) return 0;
+		if (p) 
+			out=ensure(p,len+3);
+		else		
+			out=(char*)cJSON_malloc(len+3);
+		
+		if (out == NULL) 
+			return 0;
+		
 		ptr2=out;*ptr2++='\"';
 		strcpy(ptr2,str);
 		ptr2[len]='\"';
@@ -281,11 +289,20 @@ static char *print_string_ptr(const char *str,printbuffer *p)
 		return out;
 	}
 	
-	ptr=str;while ((token=*ptr) && ++len) {if (strchr("\"\\\b\f\n\r\t",token)) len++; else if (token<32) len+=5;ptr++;}
+	ptr=str;
+	while ((token=*ptr)>0 && ++len) 
+	{
+		if (strchr("\"\\\b\f\n\r\t",token)) 
+			len++;
+		else if (token<32) 
+			len+=5;
+		
+		ptr++;
+	}
 	
 	if (p)	out=ensure(p,len+3);
 	else	out=(char*)cJSON_malloc(len+3);
-	if (!out) return 0;
+	if (out == NULL) return 0;
 
 	ptr2=out;ptr=str;
 	*ptr2++='\"';
@@ -425,7 +442,8 @@ static const char *parse_array(cJSON *item,const char *value,const char **ep)
 	while (*value==',')
 	{
 		cJSON *new_item;
-		if (!(new_item=cJSON_New_Item())) return 0; 	/* memory fail */
+		new_item=cJSON_New_Item();
+		if (new_item == NULL) return 0; 	/* memory fail */
 		child->next=new_item;new_item->prev=child;child=new_item;
 		value=skip(parse_value(child,skip(value+1),ep));
 		if (!value) return 0;	/* memory fail */
@@ -537,7 +555,8 @@ static const char *parse_object(cJSON *item,const char *value,const char **ep)
 	while (*value==',')
 	{
 		cJSON *new_item;
-		if (!(new_item=cJSON_New_Item()))	return 0; /* memory fail */
+		new_item=cJSON_New_Item();
+		if (new_item == NULL)	return 0; /* memory fail */
 		child->next=new_item;new_item->prev=child;child=new_item;
 		value=skip(parse_string(child,skip(value+1),ep));
 		if (!value) return 0;

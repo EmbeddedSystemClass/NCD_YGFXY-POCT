@@ -43,7 +43,7 @@ static void activityHide(void);
 static void activityResume(void);
 static void activityDestroy(void);
 
-static MyState_TypeDef activityBufferMalloc(void);
+static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 static void checkQRCode(void);
 static void checkCardTestResult(void);
@@ -67,7 +67,7 @@ static void clearPageText(void);
 *Author: xsx
 *Date: 2016Äê12ÔÂ21ÈÕ09:00:09
 ***************************************************************************************************/
-MyState_TypeDef createQualityActivity(Activity * thizActivity, Intent * pram)
+MyRes createQualityActivity(Activity * thizActivity, Intent * pram)
 {
 	if(NULL == thizActivity)
 		return My_Fail;
@@ -130,7 +130,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	else if(pageBuffer->lcdinput[0] == 0x3401)
 	{
 		memcpy(&(pageBuffer->deviceQuality->dateTime), &(getSystemRunTimeData()->systemDateTime), DateTimeStructSize);
-		pageBuffer->deviceQuality->crc = CalModbusCRC16Fun1(pageBuffer->deviceQuality, DeviceQualityStructCrcSize);
+		pageBuffer->deviceQuality->crc = CalModbusCRC16Fun(pageBuffer->deviceQuality, DeviceQualityStructCrcSize, NULL);
 		
 		if(My_Pass == writeDeviceQualityToFile(pageBuffer->deviceQuality))
 		{
@@ -254,7 +254,7 @@ static void activityDestroy(void)
 *Author: xsx
 *Date: 
 ***************************************************************************************************/
-static MyState_TypeDef activityBufferMalloc(void)
+static MyRes activityBufferMalloc(void)
 {
 	if(NULL == pageBuffer)
 	{

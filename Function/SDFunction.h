@@ -9,7 +9,7 @@
 
 
 /*老化数据*/
-MyState_TypeDef SavereTestData(ReTestData *reTestData, unsigned char type);
+MyRes SavereTestData(ReTestData *reTestData, unsigned char type);
 
 #endif
 

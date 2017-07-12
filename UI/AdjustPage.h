@@ -23,7 +23,7 @@ typedef struct AdjustPageBuffer_tag {
 	double adjResult;									//校准结果
 }AdjustPageBuffer;
 
-MyState_TypeDef createAdjActivity(Activity * thizActivity, Intent * pram);
+MyRes createAdjActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

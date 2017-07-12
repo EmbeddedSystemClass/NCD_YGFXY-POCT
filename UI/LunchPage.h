@@ -15,7 +15,7 @@ typedef struct LunchPageBuffer_tag {
 	Operator * tempOperator;
 }LunchPageBuffer;
 
-MyState_TypeDef createLunchActivity(Activity * thizActivity, Intent * pram);
+MyRes createLunchActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

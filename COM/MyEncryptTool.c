@@ -37,7 +37,7 @@
 unsigned char MyDencrypt(char *source, char *target, unsigned short len)
 {
 	PointBuffer * TempPointBuffer = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 
 	unsigned short i=0, j=0;
 	

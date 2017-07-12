@@ -40,7 +40,7 @@ static xQueueHandle xTestCurveQueue = NULL;												//发送测试曲线
 /***************************************************************************************************/
 /**************************************??????*************************************************/
 /***************************************************************************************************/
-static MyState_TypeDef SendTestPointData(void * data);
+static MyRes SendTestPointData(void * data);
 static void AnalysisTestData(TempCalData * S_TempCalData);
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -57,7 +57,7 @@ static void AnalysisTestData(TempCalData * S_TempCalData);
 *Author: xsx
 *Date: 2016年11月29日09:14:43
 ***************************************************************************************************/
-MyState_TypeDef InitTestFunData(void)
+MyRes InitTestFunData(void)
 {
 	/*曲线队列*/
 	if(xTestCurveQueue == NULL)
@@ -79,7 +79,7 @@ MyState_TypeDef InitTestFunData(void)
 *Author: xsx
 *Date: 2016年11月29日09:18:33
 ***************************************************************************************************/
-static MyState_TypeDef SendTestPointData(void * data)
+static MyRes SendTestPointData(void * data)
 {
 	if(xTestCurveQueue == NULL)
 		return My_Fail;
@@ -100,7 +100,7 @@ static MyState_TypeDef SendTestPointData(void * data)
 *Author: xsx
 *Date: 
 ***************************************************************************************************/
-MyState_TypeDef TakeTestPointData(void * data)
+MyRes TakeTestPointData(void * data)
 {
 	if(xTestCurveQueue == NULL)
 		return My_Fail;

@@ -25,7 +25,7 @@ typedef enum
 }ERROR_SelfTest;
 
 void SelfTest_Function(void);
-MyState_TypeDef readSelfTestStatus(ERROR_SelfTest * selfTest);
+MyRes readSelfTestStatus(ERROR_SelfTest * selfTest);
 
 #endif
 

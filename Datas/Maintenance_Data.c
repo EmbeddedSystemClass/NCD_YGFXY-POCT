@@ -28,7 +28,7 @@ static DeviceMaintenance * GB_DeviceMaintenance = NULL;
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-MyState_TypeDef CreateADeviceMaintenance(void)
+MyRes CreateADeviceMaintenance(void)
 {
 
 	if(GB_DeviceMaintenance == NULL)

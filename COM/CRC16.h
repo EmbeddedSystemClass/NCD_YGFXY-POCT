@@ -1,7 +1,7 @@
 #ifndef __CRC16_H__
 #define __CRC16_H__
 
-unsigned short CalModbusCRC16Fun1(const void *puchMsg, unsigned short usDataLen);
-void CalModbusCRC16Fun2(void *puchMsg, unsigned short usDataLen, void *crc);
+unsigned short CalModbusCRC16Fun(const void *puchMsg, unsigned short usDataLen, unsigned char * crc);
+
 #endif
 

@@ -22,8 +22,8 @@
 #define	RX_DelayTime		5
 
 void RTC_BSPInit(void);
-MyState_TypeDef RTC_SetTimeData(DateTime * data);
-MyState_TypeDef RTC_SetTimeData2(char * buf);
-MyState_TypeDef RTC_GetTimeData(DateTime * time);
+MyRes RTC_SetTimeData(DateTime * data);
+MyRes RTC_SetTimeData2(char * buf);
+MyRes RTC_GetTimeData(DateTime * time);
 #endif
 

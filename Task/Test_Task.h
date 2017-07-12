@@ -8,9 +8,9 @@
 
 char StartvTestTask(void);
 
-MyState_TypeDef StartTest(TestData * parm);
+MyRes StartTest(TestData * parm);
 
-MyState_TypeDef TakeTestResult(ResultState *testsult);
+MyRes TakeTestResult(ResultState *testsult);
 
 void clearTestResult(void);
 #endif

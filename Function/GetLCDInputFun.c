@@ -72,7 +72,7 @@ static void AnalysisCode(void * pbuf, unsigned short len)
 	unsigned short * crc = (unsigned short *)(p+len-2);
 	unsigned short *tempcrc = (unsigned short *)(p+len);
 
-	*tempcrc = CalModbusCRC16Fun1(p+3, len-2-3);
+	*tempcrc = CalModbusCRC16Fun(p+3, len-2-3, NULL);
 	
 	if((p[0] == LCD_Head_1)&&(p[1] == LCD_Head_2)&&(len == (p[2]+3))&&(*crc == *tempcrc))
 	{

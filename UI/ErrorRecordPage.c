@@ -31,10 +31,10 @@ static void activityFresh(void);
 static void activityHide(void);
 static void activityResume(void);
 static void activityDestroy(void);
-static MyState_TypeDef activityBufferMalloc(void);
+static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
-static MyState_TypeDef ShowRecord(unsigned char pageindex);
+static MyRes ShowRecord(unsigned char pageindex);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -51,7 +51,7 @@ static MyState_TypeDef ShowRecord(unsigned char pageindex);
 *Author: xsx
 *Date: 2016年12月21日09:00:09
 ***************************************************************************************************/
-MyState_TypeDef createErrorRecordActivity(Activity * thizActivity, Intent * pram)
+MyRes createErrorRecordActivity(Activity * thizActivity, Intent * pram)
 {
 	if(NULL == thizActivity)
 		return My_Fail;
@@ -215,7 +215,7 @@ static void activityDestroy(void)
 *Author: xsx
 *Date: 
 ***************************************************************************************************/
-static MyState_TypeDef activityBufferMalloc(void)
+static MyRes activityBufferMalloc(void)
 {
 	if(NULL == S_ErrorRecordPageBuffer)
 	{
@@ -255,7 +255,7 @@ static void activityBufferFree(void)
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-static MyState_TypeDef ShowRecord(unsigned char pageindex)
+static MyRes ShowRecord(unsigned char pageindex)
 {
 	unsigned short i=0;
 		
@@ -265,7 +265,7 @@ static MyState_TypeDef ShowRecord(unsigned char pageindex)
 	S_ErrorRecordPageBuffer->deviceErrorReadPackge.pageRequest.startElementIndex = S_ErrorRecordPageBuffer->tempvalue1;
 	S_ErrorRecordPageBuffer->deviceErrorReadPackge.pageRequest.pageSize = DeviceErrorRecordPageShowNum;
 	S_ErrorRecordPageBuffer->deviceErrorReadPackge.pageRequest.orderType = ASC;
-	S_ErrorRecordPageBuffer->deviceErrorReadPackge.pageRequest.crc = CalModbusCRC16Fun1(&S_ErrorRecordPageBuffer->deviceErrorReadPackge.pageRequest, PageRequestStructCrcSize);
+	S_ErrorRecordPageBuffer->deviceErrorReadPackge.pageRequest.crc = CalModbusCRC16Fun(&S_ErrorRecordPageBuffer->deviceErrorReadPackge.pageRequest, PageRequestStructCrcSize, NULL);
 		
 	//读取数据
 	readDeviceErrorFromFile(&(S_ErrorRecordPageBuffer->deviceErrorReadPackge));

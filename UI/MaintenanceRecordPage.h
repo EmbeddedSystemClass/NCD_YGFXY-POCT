@@ -21,7 +21,7 @@ typedef struct MaintenanceRecordPageBuffer_tag {
 	unsigned short lcdinput[100];
 }MaintenanceRecordPageBuffer;
 
-MyState_TypeDef createMaintenanceRecordActivity(Activity * thizActivity, Intent * pram);
+MyRes createMaintenanceRecordActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

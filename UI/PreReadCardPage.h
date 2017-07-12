@@ -18,7 +18,7 @@ typedef struct PreReadPageBuffer_tag {
 	unsigned short lcdinput[100];
 }PreReadPageBuffer;
 
-MyState_TypeDef createPreReadCardActivity(Activity * thizActivity, Intent * pram);
+MyRes createPreReadCardActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

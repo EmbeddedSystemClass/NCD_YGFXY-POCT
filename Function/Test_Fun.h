@@ -31,11 +31,11 @@ typedef struct TempCalData_tag{
 }TempCalData;
 #pragma pack()
 
-MyState_TypeDef InitTestFunData(void);
+MyRes InitTestFunData(void);
 ResultState TestFunction(TestData * parm);
 
-MyState_TypeDef TakeTestPointData(void * data);
-MyState_TypeDef TakeTestResultData(void * data);
+MyRes TakeTestPointData(void * data);
+MyRes TakeTestResultData(void * data);
 
 #endif
 

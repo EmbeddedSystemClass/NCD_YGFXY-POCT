@@ -24,7 +24,7 @@
 
 /******************************************************************************************/
 /*****************************************局部变量声明*************************************/
-static LunchPageBuffer * S_LunchPageBuffer = NULL;
+static LunchPageBuffer * page = NULL;
 /******************************************************************************************/
 /*****************************************局部函数声明*************************************/
 static void activityStart(void);
@@ -34,7 +34,7 @@ static void activityHide(void);
 static void activityResume(void);
 static void activityDestroy(void);
 
-static MyState_TypeDef activityBufferMalloc(void);
+static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
 static void DspPageText(void);
@@ -54,7 +54,7 @@ static void DspPageText(void);
 *Author: xsx
 *Date: 2016年12月21日09:00:09
 ***************************************************************************************************/
-MyState_TypeDef createLunchActivity(Activity * thizActivity, Intent * pram)
+MyRes createLunchActivity(Activity * thizActivity, Intent * pram)
 {
 	if(NULL == thizActivity)
 		return My_Fail;
@@ -80,12 +80,9 @@ MyState_TypeDef createLunchActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_LunchPageBuffer)
-	{		
-		timer_set(&(S_LunchPageBuffer->timer), getGBSystemSetData()->ledSleepTime);
+	timer_set(&(page->timer), getGBSystemSetData()->ledSleepTime);
 	
-		DspPageText();
-	}
+	DspPageText();
 	
 	SelectPage(82);
 
@@ -102,78 +99,75 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(S_LunchPageBuffer)
+	/*命令*/
+	page->lcdinput[0] = pbuf[4];
+	page->lcdinput[0] = (page->lcdinput[0]<<8) + pbuf[5];
+	
+	//重置休眠时间
+	timer_restart(&(page->timer));
+		
+	//设置
+	if(page->lcdinput[0] == 0x1103)
 	{
-		/*命令*/
-		S_LunchPageBuffer->lcdinput[0] = pbuf[4];
-		S_LunchPageBuffer->lcdinput[0] = (S_LunchPageBuffer->lcdinput[0]<<8) + pbuf[5];
-		
-		//重置休眠时间
-		timer_restart(&(S_LunchPageBuffer->timer));
-		
-		//设置
-		if(S_LunchPageBuffer->lcdinput[0] == 0x1103)
+		startActivity(createSystemSetActivity, NULL, NULL);
+	}
+	//查看数据
+	else if(page->lcdinput[0] == 0x1102)
+	{	
+		startActivity(createRecordActivity, NULL, NULL);
+	}
+	//常规测试
+	else if(page->lcdinput[0] == 0x1100)
+	{	
+		page->error = CreateANewTest(NormalTestType);
+		//创建成功
+		if(Error_OK == page->error)
 		{
-			startActivity(createSystemSetActivity, NULL, NULL);
+			page->tempOperator = &(GetCurrentTestItem()->testData.operator);
+			startActivity(createSelectUserActivity, createIntent(&(page->tempOperator), 4), createSampleActivity);
 		}
-		//查看数据
-		else if(S_LunchPageBuffer->lcdinput[0] == 0x1102)
-		{	
-			startActivity(createRecordActivity, NULL, NULL);
+		//禁止常规测试
+		else if(Error_StopNormalTest == page->error)
+		{
+			SendKeyCode(1);
+			AddNumOfSongToList(8, 0);
 		}
-		//常规测试
-		else if(S_LunchPageBuffer->lcdinput[0] == 0x1100)
-		{	
-			S_LunchPageBuffer->error = CreateANewTest(NormalTestType);
+		//创建失败
+		else if(Error_Mem == page->error)
+		{
+			SendKeyCode(2);
+			AddNumOfSongToList(7, 0);
+		}
+	}
+	//批量测试
+	else if(page->lcdinput[0] == 0x1101)
+	{
+		//有卡排队，则进入排队界面
+		if(true == IsPaiDuiTestting())
+		{
+			startActivity(createPaiDuiActivity, NULL, NULL);
+		}
+		//无卡排队则开始创建
+		else
+		{
+			page->error = CreateANewTest(PaiDuiTestType);
 			//创建成功
-			if(Error_OK == S_LunchPageBuffer->error)
+			if(Error_OK == page->error)
 			{
-				S_LunchPageBuffer->tempOperator = &(GetCurrentTestItem()->testData.operator);
-				startActivity(createSelectUserActivity, createIntent(&(S_LunchPageBuffer->tempOperator), 4), createSampleActivity);
-			}
-			//禁止常规测试
-			else if(Error_StopNormalTest == S_LunchPageBuffer->error)
-			{
-				SendKeyCode(1);
-				AddNumOfSongToList(8, 0);
+				page->tempOperator = &(GetCurrentTestItem()->testData.operator);
+				startActivity(createSelectUserActivity, createIntent(&(page->tempOperator), 4), createSampleActivity);
 			}
 			//创建失败
-			else if(Error_Mem == S_LunchPageBuffer->error)
+			else if(Error_Mem == page->error)
 			{
 				SendKeyCode(2);
 				AddNumOfSongToList(7, 0);
 			}
-		}
-		//批量测试
-		else if(S_LunchPageBuffer->lcdinput[0] == 0x1101)
-		{
-			//有卡排队，则进入排队界面
-			if(true == IsPaiDuiTestting())
+			//排队模块失联
+			else if(Error_PaiduiDisconnect == page->error)
 			{
-				startActivity(createPaiDuiActivity, NULL, NULL);
-			}
-			//无卡排队则开始创建
-			else
-			{
-				S_LunchPageBuffer->error = CreateANewTest(PaiDuiTestType);
-				//创建成功
-				if(Error_OK == S_LunchPageBuffer->error)
-				{
-					S_LunchPageBuffer->tempOperator = &(GetCurrentTestItem()->testData.operator);
-					startActivity(createSelectUserActivity, createIntent(&(S_LunchPageBuffer->tempOperator), 4), createSampleActivity);
-				}
-				//创建失败
-				else if(Error_Mem == S_LunchPageBuffer->error)
-				{
-					SendKeyCode(2);
-					AddNumOfSongToList(7, 0);
-				}
-				//排队模块失联
-				else if(Error_PaiduiDisconnect == S_LunchPageBuffer->error)
-				{
-					SendKeyCode(3);
-					AddNumOfSongToList(58, 0);
-				}
+				SendKeyCode(3);
+				AddNumOfSongToList(58, 0);
 			}
 		}
 	}
@@ -190,7 +184,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(TimeOut == timer_expired(&(S_LunchPageBuffer->timer)))
+	if(TimeOut == timer_expired(&(page->timer)))
 	{
 		startActivity(createSleepActivity, NULL, NULL);
 	}
@@ -221,10 +215,7 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
-	if(S_LunchPageBuffer)
-	{
-		timer_restart(&(S_LunchPageBuffer->timer));
-	}
+	timer_restart(&(page->timer));
 	
 	SelectPage(82);
 }
@@ -252,14 +243,14 @@ static void activityDestroy(void)
 *Author: xsx
 *Date: 
 ***************************************************************************************************/
-static MyState_TypeDef activityBufferMalloc(void)
+static MyRes activityBufferMalloc(void)
 {
-	if(NULL == S_LunchPageBuffer)
+	if(NULL == page)
 	{
-		S_LunchPageBuffer = MyMalloc(sizeof(LunchPageBuffer));
-		if(S_LunchPageBuffer)	
+		page = MyMalloc(sizeof(LunchPageBuffer));
+		if(page)	
 		{
-			memset(S_LunchPageBuffer, 0, sizeof(LunchPageBuffer));
+			memset(page, 0, sizeof(LunchPageBuffer));
 	
 			return My_Pass;
 		}
@@ -281,8 +272,8 @@ static MyState_TypeDef activityBufferMalloc(void)
 ***************************************************************************************************/
 static void activityBufferFree(void)
 {
-	MyFree(S_LunchPageBuffer);
-	S_LunchPageBuffer = NULL;
+	MyFree(page);
+	page = NULL;
 }
 
 /***************************************************************************************************
@@ -296,11 +287,8 @@ static void activityBufferFree(void)
 ***************************************************************************************************/
 static void DspPageText(void)
 {
-	if(S_LunchPageBuffer)
-	{
-		memset(S_LunchPageBuffer->buf, 0, 100);
-		sprintf(S_LunchPageBuffer->buf, "V%d.%d.%02d", GB_SoftVersion/1000, GB_SoftVersion%1000/100, GB_SoftVersion%100);
-		DisText(0x1110, S_LunchPageBuffer->buf, 30);
-	}
+	memset(page->buf, 0, 100);
+	sprintf(page->buf, "V%d.%d.%02d", GB_SoftVersion/1000, GB_SoftVersion%1000/100, GB_SoftVersion%100);
+	DisText(0x1110, page->buf, 30);
 }
 

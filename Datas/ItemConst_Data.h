@@ -5,7 +5,7 @@
 #include	"Define.h"
 #include	"ItemConstData.h"
 
-MyState_TypeDef getItemConstData(ItemConstData * itemConstData, char * itemName);
+MyRes getItemConstData(ItemConstData * itemConstData, char * itemName);
 
 #endif
 

@@ -19,7 +19,7 @@
 
 /******************************************************************************************/
 /*****************************************局部变量声明*************************************/
-static SleepPageBuffer *S_SleepPageBuffer = NULL;
+static SleepPageBuffer * page = NULL;
 /******************************************************************************************/
 /*****************************************局部函数声明*************************************/
 static void activityStart(void);
@@ -29,7 +29,7 @@ static void activityHide(void);
 static void activityResume(void);
 static void activityDestroy(void);
 
-static MyState_TypeDef activityBufferMalloc(void);
+static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
 /******************************************************************************************/
@@ -48,7 +48,7 @@ static void activityBufferFree(void);
 *Author: xsx
 *Date: 2016年12月20日16:21:51
 ***************************************************************************************************/
-MyState_TypeDef createSleepActivity(Activity * thizActivity, Intent * pram)
+MyRes createSleepActivity(Activity * thizActivity, Intent * pram)
 {
 	if(NULL == thizActivity)
 		return My_Fail;
@@ -65,28 +65,20 @@ MyState_TypeDef createSleepActivity(Activity * thizActivity, Intent * pram)
 
 static void activityStart(void)
 {
-	if(S_SleepPageBuffer)
-	{
-		
-	}	
-	
 	SetLEDLight(10);
 	
 	SelectPage(142);
 }
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(S_SleepPageBuffer)
-	{
-		/*命令*/
-		S_SleepPageBuffer->lcdinput[0] = pbuf[4];
-		S_SleepPageBuffer->lcdinput[0] = (S_SleepPageBuffer->lcdinput[0]<<8) + pbuf[5];
+	/*命令*/
+	page->lcdinput[0] = pbuf[4];
+	page->lcdinput[0] = (page->lcdinput[0]<<8) + pbuf[5];
 		
-		/*设置*/
-		if(S_SleepPageBuffer->lcdinput[0] == 0x1D70)
-		{
-			backToFatherActivity();
-		}
+	/*设置*/
+	if(page->lcdinput[0] == 0x1D70)
+	{
+		backToFatherActivity();
 	}
 }
 static void activityFresh(void)
@@ -108,15 +100,15 @@ static void activityDestroy(void)
 	activityBufferFree();
 }
 
-static MyState_TypeDef activityBufferMalloc(void)
+static MyRes activityBufferMalloc(void)
 {
-	if(NULL == S_SleepPageBuffer)
+	if(NULL == page)
 	{
-		S_SleepPageBuffer = MyMalloc(sizeof(SleepPageBuffer));
+		page = MyMalloc(sizeof(SleepPageBuffer));
 		
-		if(S_SleepPageBuffer)
+		if(page)
 		{
-			memset(S_SleepPageBuffer, 0, sizeof(SleepPageBuffer));
+			memset(page, 0, sizeof(SleepPageBuffer));
 			
 			return My_Pass;
 		}
@@ -127,8 +119,8 @@ static MyState_TypeDef activityBufferMalloc(void)
 
 static void activityBufferFree(void)
 {
-	MyFree(S_SleepPageBuffer);
-	S_SleepPageBuffer = NULL;
+	MyFree(page);
+	page = NULL;
 }
 
 /***************************************************************************************************/

@@ -22,7 +22,7 @@ typedef struct ErrorRecordPageBuffer_tag {
 	unsigned short lcdinput[100];
 }ErrorRecordPageBuffer;
 
-MyState_TypeDef createErrorRecordActivity(Activity * thizActivity, Intent * pram);
+MyRes createErrorRecordActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

@@ -11,7 +11,7 @@ typedef struct SysSetPageBuffer_tag {
 	unsigned short lcdinput[100];
 }SysSetPageBuffer;
 
-MyState_TypeDef createSystemSetActivity(Activity * thizActivity, Intent * pram);
+MyRes createSystemSetActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

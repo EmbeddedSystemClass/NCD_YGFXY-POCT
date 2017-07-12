@@ -1,4 +1,4 @@
---cpu Cortex-M4
+--cpu=Cortex-M4 --fpu=SoftVFP
 ".\obj\main.o"
 ".\obj\systeminit.o"
 ".\obj\stm32f4xx_it.o"
@@ -112,6 +112,7 @@
 ".\obj\deviceerrordao.o"
 ".\obj\devicemaintenancedao.o"
 ".\obj\devicequalitydao.o"
+".\obj\recorddatadao.o"
 ".\obj\ethernetif.o"
 ".\obj\sys_arch.o"
 ".\obj\etharp.o"
@@ -133,6 +134,8 @@
 ".\obj\httpposttool.o"
 ".\obj\jsontoobject.o"
 ".\obj\utf8togbk.o"
+".\obj\httpdownsoft.o"
+".\obj\mylock.o"
 ".\obj\heap_4.o"
 ".\obj\list.o"
 ".\obj\port.o"
@@ -143,15 +146,10 @@
 ".\obj\misc.o"
 ".\obj\stm32f4xx_dma.o"
 ".\obj\stm32f4xx_exti.o"
-".\obj\stm32f4xx_flash.o"
-".\obj\stm32f4xx_fsmc.o"
 ".\obj\stm32f4xx_gpio.o"
-".\obj\stm32f4xx_i2c.o"
 ".\obj\stm32f4xx_iwdg.o"
 ".\obj\stm32f4xx_pwr.o"
 ".\obj\stm32f4xx_rcc.o"
-".\obj\stm32f4xx_rtc.o"
-".\obj\stm32f4xx_spdifrx.o"
 ".\obj\stm32f4xx_spi.o"
 ".\obj\stm32f4xx_syscfg.o"
 ".\obj\stm32f4xx_tim.o"
@@ -195,6 +193,6 @@
 ".\obj\udp.o"
 ".\obj\cjson.o"
 --library_type=microlib --strict --scatter ".\Obj\NCD_Tester.sct"
---summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
 --list ".\List\NCD_Tester.map" -o .\Obj\NCD_Tester.axf

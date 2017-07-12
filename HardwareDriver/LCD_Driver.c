@@ -23,7 +23,7 @@
 /***************************************************************************************************/
 /**************************************局部变量声明*************************************************/
 /***************************************************************************************************/
-static char *txdat = NULL;
+static unsigned char *txdat = NULL;
 static unsigned char tempbuf[200];
 /***************************************************************************************************/
 /**************************************局部函数声明*************************************************/
@@ -49,7 +49,7 @@ static void WriteLCDData(unsigned short addr, void *data, unsigned char len);
 ***************************************************************************************************/
 static void WriteLCDRegister(unsigned char reg, void *data, unsigned char len)
 {			
-	char *q = NULL;
+	unsigned char *q = NULL;
 	unsigned char *p = (unsigned char *)data;
 	unsigned char i=0;
 	
@@ -71,7 +71,7 @@ static void WriteLCDRegister(unsigned char reg, void *data, unsigned char len)
 	for(i=0; i<len; i++)
 		*q++ = *p++;
 	
-	CalModbusCRC16Fun2(txdat+3, len + 2, q);
+	CalModbusCRC16Fun(txdat+3, len + 2, q);
 	
 	SendDataToQueue(GetUsart6TXQueue(), GetUsart6TXMutex(), txdat, txdat[2]+3, 1, 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart6TXInterrupt);
 	
@@ -90,7 +90,7 @@ static void WriteLCDRegister(unsigned char reg, void *data, unsigned char len)
 ***************************************************************************************************/
 static void ReadLCDRegister(unsigned char reg, unsigned char len)
 {			
-	char *q = NULL;
+	unsigned char *q = NULL;
 	
 	txdat = MyMalloc(16);
 	if(txdat == NULL)
@@ -109,7 +109,7 @@ static void ReadLCDRegister(unsigned char reg, unsigned char len)
 
 	*q++ = len;
 	
-	CalModbusCRC16Fun2(txdat+3, 1 + 2, q);
+	CalModbusCRC16Fun(txdat+3, 1 + 2, q);
 	
 	SendDataToQueue(GetUsart6TXQueue(), GetUsart6TXMutex(), txdat, txdat[2]+3, 1, 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart6TXInterrupt);
 	
@@ -118,7 +118,7 @@ static void ReadLCDRegister(unsigned char reg, unsigned char len)
 
 static void WriteLCDData(unsigned short addr, void *data, unsigned char len)
 {
-	char *q = NULL;
+	unsigned char *q = NULL;
 	unsigned char *p = (unsigned char *)data;
 	unsigned char i=0;
 	
@@ -141,7 +141,7 @@ static void WriteLCDData(unsigned short addr, void *data, unsigned char len)
 	for(i=0; i<len; i++)
 		*q++ = *p++;
 	
-	CalModbusCRC16Fun2(txdat+3, len + 3, q);
+	CalModbusCRC16Fun(txdat+3, len + 3, q);
 	
 	SendDataToQueue(GetUsart6TXQueue(), GetUsart6TXMutex(), txdat, txdat[2]+3, 1, 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart6TXInterrupt);
 
@@ -306,7 +306,7 @@ void BasicPic(unsigned short addr,unsigned short datanum, unsigned short soureid
 
 /************************************************************************
 ** 函数名:GetBufLen
-** 功  能:迪文屏返回的字符串以0xff结尾
+** 功  能:迪文屏返回的字符串以0xff结尾,将0xff换成0x00，方便计算长度
 ** 输  入:无
 ** 输  出:无
 ** 返  回：无
@@ -321,10 +321,29 @@ unsigned short GetBufLen(unsigned char *p ,unsigned short len)
 			{
 				if(p[i] == 0xff)
 				{
+					p[i] = 0;
 					return i;
 				}
 			}
 		return 0;
+}
+
+void getLcdInputData(void * myBuffer, void * lcdData)
+{
+	unsigned short len = 1000;
+	unsigned char * p = (unsigned char *)myBuffer;
+	unsigned char * q = (unsigned char *)lcdData;
+	
+	while(len--)
+	{
+		if(*q == 0xff)
+		{
+			*p++ = 0;
+			break;
+		}
+		else
+			*p++ = *q++;
+	}
 }
 
 void DspTimeAndTempData(void)
@@ -367,7 +386,7 @@ void DisPlayLine(unsigned char channel , void * data , unsigned char datalen)
 {
 	unsigned short * p = (unsigned short *)data;
 				
-	char *q = NULL;
+	unsigned char *q = NULL;
 	unsigned char i = 0;
 	unsigned short tempdat = 0;
 		
@@ -391,7 +410,7 @@ void DisPlayLine(unsigned char channel , void * data , unsigned char datalen)
 		*q++ = (unsigned char)tempdat;
 	}
 	
-	CalModbusCRC16Fun2(txdat+3, datalen*2 + 2, q);
+	CalModbusCRC16Fun(txdat+3, datalen*2 + 2, q);
 	
 	SendDataToQueue(GetUsart6TXQueue(), GetUsart6TXMutex(), txdat, txdat[2]+3, 1, 50 * portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart6TXInterrupt);
 

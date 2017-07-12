@@ -5,10 +5,10 @@
 #include	"Define.h"
 #include	"DeviceError.h"
 
-MyState_TypeDef writeDeviceErrorToFile(DeviceError * deviceError);
-MyState_TypeDef readDeviceErrorFromFile(DeviceErrorReadPackge * deviceErrorReadPackge);
-MyState_TypeDef plusDeviceErrorHeaderUpLoadIndexToFile(unsigned int index);
-MyState_TypeDef deleteDeviceErrorFile(void);
+MyRes writeDeviceErrorToFile(DeviceError * deviceError);
+MyRes readDeviceErrorFromFile(DeviceErrorReadPackge * deviceErrorReadPackge);
+MyRes plusDeviceErrorHeaderuserUpLoadIndexToFile(unsigned int index);
+MyRes deleteDeviceErrorFile(void);
 
 #endif
 

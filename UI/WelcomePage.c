@@ -20,7 +20,7 @@
 #include	"stdio.h"
 /******************************************************************************************/
 /*****************************************局部变量声明*************************************/
-static WelcomePageBuffer * S_WelcomePageBuffer = NULL;
+static WelcomePageBuffer * page = NULL;
 /******************************************************************************************/
 /*****************************************局部函数声明*************************************/
 static void activityStart(void);
@@ -30,7 +30,7 @@ static void activityHide(void);
 static void activityResume(void);
 static void activityDestroy(void);
 
-static MyState_TypeDef activityBufferMalloc(void);
+static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 /******************************************************************************************/
 /******************************************************************************************/
@@ -48,7 +48,7 @@ static void activityBufferFree(void);
 *Author: xsx
 *Date: 2016年12月20日16:21:51
 ***************************************************************************************************/
-MyState_TypeDef createWelcomeActivity(Activity * thizActivity, Intent * pram)
+MyRes createWelcomeActivity(Activity * thizActivity, Intent * pram)
 {
 	if(NULL == thizActivity)
 		return My_Fail;
@@ -74,9 +74,9 @@ MyState_TypeDef createWelcomeActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_WelcomePageBuffer)
+	if(page)
 	{
-		timer_set(&(S_WelcomePageBuffer->timer), 2);
+		timer_set(&(page->timer), 2);
 		
 		//AddNumOfSongToList(0, 0);
 	}
@@ -95,26 +95,26 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(S_WelcomePageBuffer)
+	if(page)
 	{
 		/*命令*/
-		S_WelcomePageBuffer->lcdinput[0] = pbuf[4];
-		S_WelcomePageBuffer->lcdinput[0] = (S_WelcomePageBuffer->lcdinput[0]<<8) + pbuf[5];
+		page->lcdinput[0] = pbuf[4];
+		page->lcdinput[0] = (page->lcdinput[0]<<8) + pbuf[5];
 		
-		S_WelcomePageBuffer->lcdinput[1] = pbuf[6];
-		S_WelcomePageBuffer->lcdinput[1] = (S_WelcomePageBuffer->lcdinput[1]<<8) + pbuf[7];
+		page->lcdinput[1] = pbuf[6];
+		page->lcdinput[1] = (page->lcdinput[1]<<8) + pbuf[7];
 		
 		if(0x81 == pbuf[3])
 		{
 			//页面id
 			if(0x03 == pbuf[4])
 			{
-				S_WelcomePageBuffer->currentPageId = S_WelcomePageBuffer->lcdinput[1];	
+				page->currentPageId = page->lcdinput[1];	
 			}
 		}
 		else if(0x83 == pbuf[3])
 		{
-			if((S_WelcomePageBuffer->lcdinput[0] >= 0x1010) && (S_WelcomePageBuffer->lcdinput[0] <= 0x1014))
+			if((page->lcdinput[0] >= 0x1010) && (page->lcdinput[0] <= 0x1014))
 				while(1);
 		}
 	}
@@ -131,20 +131,20 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(S_WelcomePageBuffer)
+	if(page)
 	{
-		if(My_Pass == readSelfTestStatus(&(S_WelcomePageBuffer->selfTestStatus)))
+		if(My_Pass == readSelfTestStatus(&(page->selfTestStatus)))
 		{
-			if(SystemData_OK == S_WelcomePageBuffer->selfTestStatus)
+			if(SystemData_OK == page->selfTestStatus)
 			{
 				SetLEDLight(getGBSystemSetData()->ledLightIntensity);
 			}
 		}
 		
-		if(80 == S_WelcomePageBuffer->currentPageId)
+		if(80 == page->currentPageId)
 		{
 			//自检完成
-			if(SelfTest_OK == S_WelcomePageBuffer->selfTestStatus)
+			if(SelfTest_OK == page->selfTestStatus)
 			{
 				/*开启测试任务*/
 				StartvTestTask();
@@ -167,7 +167,7 @@ static void activityFresh(void)
 				return;
 			}
 			//加载数据错误，说明sd异常
-			else if(SystemData_ERROR == S_WelcomePageBuffer->selfTestStatus)
+			else if(SystemData_ERROR == page->selfTestStatus)
 			{
 				SelectPage(81);
 				
@@ -178,7 +178,7 @@ static void activityFresh(void)
 				AddNumOfSongToList(5, 0);
 			}
 			//led异常，告警发光模块错误
-			else if(Light_Error == S_WelcomePageBuffer->selfTestStatus)
+			else if(Light_Error == page->selfTestStatus)
 			{
 				SelectPage(81);
 				vTaskDelay(1000 / portTICK_RATE_MS);
@@ -186,7 +186,7 @@ static void activityFresh(void)
 				AddNumOfSongToList(4, 0);
 			}
 			//采集异常，告警采集模块错误
-			else if(AD_ERROR == S_WelcomePageBuffer->selfTestStatus)
+			else if(AD_ERROR == page->selfTestStatus)
 			{
 				SelectPage(81);
 				vTaskDelay(1000 / portTICK_RATE_MS);
@@ -194,7 +194,7 @@ static void activityFresh(void)
 				AddNumOfSongToList(3, 0);
 			}
 			//传动异常，告警传动模块错误
-			else if(Motol_ERROR == S_WelcomePageBuffer->selfTestStatus)
+			else if(Motol_ERROR == page->selfTestStatus)
 			{
 				SelectPage(81);
 				vTaskDelay(1000 / portTICK_RATE_MS);
@@ -203,11 +203,11 @@ static void activityFresh(void)
 			}
 		}
 		
-		if((81 != S_WelcomePageBuffer->currentPageId) && (TimeOut == timer_expired(&(S_WelcomePageBuffer->timer))))
+		if((81 != page->currentPageId) && (TimeOut == timer_expired(&(page->timer))))
 		{
 			ReadCurrentPageId();
 
-			timer_reset(&(S_WelcomePageBuffer->timer));
+			timer_reset(&(page->timer));
 		}
 	}
 }
@@ -242,19 +242,19 @@ static void activityDestroy(void)
 *FunctionName：PageBufferMalloc
 *Description：当前界面临时缓存申请
 *Input：None
-*Output：MyState_TypeDef -- 返回成功与否
+*Output：MyRes -- 返回成功与否
 *Author：xsx
 *Data：2016年6月27日08:56:02
 ***************************************************************************************************/
-static MyState_TypeDef activityBufferMalloc(void)
+static MyRes activityBufferMalloc(void)
 {
-	if(NULL == S_WelcomePageBuffer)
+	if(NULL == page)
 	{
-		S_WelcomePageBuffer = (WelcomePageBuffer *)MyMalloc(sizeof(WelcomePageBuffer));
+		page = (WelcomePageBuffer *)MyMalloc(sizeof(WelcomePageBuffer));
 			
-		if(S_WelcomePageBuffer)
+		if(page)
 		{
-			memset(S_WelcomePageBuffer, 0, sizeof(WelcomePageBuffer));
+			memset(page, 0, sizeof(WelcomePageBuffer));
 		
 			return My_Pass;
 			
@@ -274,8 +274,8 @@ static MyState_TypeDef activityBufferMalloc(void)
 ***************************************************************************************************/
 static void activityBufferFree(void)
 {
-	MyFree(S_WelcomePageBuffer);
-	S_WelcomePageBuffer = NULL;
+	MyFree(page);
+	page = NULL;
 }
 
 

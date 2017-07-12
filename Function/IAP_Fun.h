@@ -3,8 +3,8 @@
 
 #include	"Define.h"
 
-MyState_TypeDef checkMd5(void);
-MyState_TypeDef checkNewFirmwareIsSuccessDownload(void);
+MyRes checkMd5(void);
+MyRes checkNewFirmwareIsSuccessDownload(void);
 
 #endif
 

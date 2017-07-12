@@ -4,8 +4,8 @@
 
 #include	"SystemSet_Data.h"
 
-MyState_TypeDef SaveSystemSetData(SystemSetData * systemSetData);
-MyState_TypeDef ReadSystemSetData(SystemSetData * systemSetData);
+MyRes SaveSystemSetData(SystemSetData * systemSetData);
+MyRes ReadSystemSetData(SystemSetData * systemSetData);
 
 #endif
 

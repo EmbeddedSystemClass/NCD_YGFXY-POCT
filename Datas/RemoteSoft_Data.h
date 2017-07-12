@@ -1,18 +1,8 @@
 #ifndef _REMOTESOFT_D_H__
 #define _REMOTESOFT_D_H__
 
-
+#include	"RemoteSoftInfo.h"
 #include	"Define.h"
-
-#pragma pack(1)
-typedef struct
-{
-	unsigned short RemoteFirmwareVersion;
-	char md5[32];
-	char desc[200];
-	bool isSuccessDownloadFirmware;
-}RemoteSoftInfo;
-#pragma pack()
 
 void setGbRemoteFirmwareVersion(unsigned short version);
 unsigned short getGbRemoteFirmwareVersion(void);

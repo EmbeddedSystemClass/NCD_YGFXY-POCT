@@ -42,12 +42,12 @@ static LinkStack GB_ActivityLinkStack;
 *Input: pageCreate -- activity的创建函数
 *		pram -- 传入的参数
 *Output: 
-*Return: MyState_TypeDef -- 启动成功与否
+*Return: MyRes -- 启动成功与否
 *Author: xsx
 *Date: 2016年12月20日11:16:59
 ***************************************************************************************************/
-MyState_TypeDef startActivity(MyState_TypeDef (* pageCreate)(Activity * thizactivity, Intent * pram), Intent * pram,
-	MyState_TypeDef (* childPageCreate)(Activity * thizactivity, Intent * pram)
+MyRes startActivity(MyRes (* pageCreate)(Activity * thizactivity, Intent * pram), Intent * pram,
+	MyRes (* childPageCreate)(Activity * thizactivity, Intent * pram)
 )
 {
 	Activity * activity = NULL;
@@ -62,8 +62,8 @@ MyState_TypeDef startActivity(MyState_TypeDef (* pageCreate)(Activity * thizacti
 	{
 		memset(activity, 0, ActivityStructSize);
 		
-		activity->pageCreate = (MyState_TypeDef (*)(void * thizactivity, Intent * pram))pageCreate;
-		activity->childPageCreate = (MyState_TypeDef (*)(void * thizactivity, Intent * pram))childPageCreate;
+		activity->pageCreate = (MyRes (*)(void * thizactivity, Intent * pram))pageCreate;
+		activity->childPageCreate = (MyRes (*)(void * thizactivity, Intent * pram))childPageCreate;
 		
 		//新页面入栈
 		if(My_Pass == StackPush(&GB_ActivityLinkStack, activity))
@@ -98,7 +98,7 @@ MyState_TypeDef startActivity(MyState_TypeDef (* pageCreate)(Activity * thizacti
 *Author: xsx
 *Date: 2016年12月20日11:53:00
 ***************************************************************************************************/
-MyState_TypeDef backToActivity(char * pageName)
+MyRes backToActivity(char * pageName)
 {
 	Activity * activity = NULL;
 	
@@ -131,11 +131,11 @@ MyState_TypeDef backToActivity(char * pageName)
 *Author:  xsx
 *Date: 2017年6月14日 14:59:16
 ***************************************************************************************************/
-MyState_TypeDef gotoChildActivity(Intent * pram,
-	MyState_TypeDef (* childPageCreate)(Activity * thizactivity, Intent * pram))
+MyRes gotoChildActivity(Intent * pram,
+	MyRes (* childPageCreate)(Activity * thizactivity, Intent * pram))
 {
 	if((GB_ActivityLinkStack.top) && (GB_ActivityLinkStack.top->activity) && (GB_ActivityLinkStack.top->activity->childPageCreate))
-		return startActivity((MyState_TypeDef (*)(Activity * thizactivity, Intent * pram))GB_ActivityLinkStack.top->activity->childPageCreate, 
+		return startActivity((MyRes (*)(Activity * thizactivity, Intent * pram))GB_ActivityLinkStack.top->activity->childPageCreate, 
 			pram, childPageCreate);
 	
 	return My_Fail;
@@ -150,7 +150,7 @@ MyState_TypeDef gotoChildActivity(Intent * pram,
 *Author: xsx
 *Date: 2016年12月21日10:52:37
 ***************************************************************************************************/
-MyState_TypeDef backToFatherActivity(void)
+MyRes backToFatherActivity(void)
 {
 	Activity * activity = NULL;
 	

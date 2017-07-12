@@ -21,7 +21,7 @@ typedef struct QualityRecordPageBuffer_tag {
 	unsigned short lcdinput[100];
 }QualityRecordPageBuffer;
 
-MyState_TypeDef createQualityRecordActivity(Activity * thizActivity, Intent * pram);
+MyRes createQualityRecordActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

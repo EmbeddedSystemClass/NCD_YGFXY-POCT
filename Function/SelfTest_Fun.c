@@ -47,14 +47,14 @@ static xQueueHandle xSelfTestStatusQueue = NULL;							//保存每个自检状态
 /***************************************************************************************************/
 /**************************************局部函数声明*************************************************/
 /***************************************************************************************************/
-static MyState_TypeDef sendSelfTestStatus(ERROR_SelfTest selfTest);
-static MyState_TypeDef loadSystemData(void);
-static MyState_TypeDef testLed(void);
-static MyState_TypeDef testADModel(void);
-static MyState_TypeDef testMotol(void);
+static MyRes sendSelfTestStatus(ERROR_SelfTest selfTest);
+static MyRes loadSystemData(void);
+static MyRes testLed(void);
+static MyRes testADModel(void);
+static MyRes testMotol(void);
 static void deviceAdjustSelf(void);
 static void deviceErrorTest(void);
-MyState_TypeDef testErWeiMa(void);
+MyRes testErWeiMa(void);
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************正文********************************************************/
@@ -71,7 +71,7 @@ MyState_TypeDef testErWeiMa(void);
 *Author: xsx
 *Date: 2016年12月23日09:02:33
 ***************************************************************************************************/
-MyState_TypeDef readSelfTestStatus(ERROR_SelfTest * selfTest)
+MyRes readSelfTestStatus(ERROR_SelfTest * selfTest)
 {
 	if(NULL == xSelfTestStatusQueue)
 		xSelfTestStatusQueue = xQueueCreate(10, sizeof(ERROR_SelfTest));
@@ -91,7 +91,7 @@ MyState_TypeDef readSelfTestStatus(ERROR_SelfTest * selfTest)
 *Author: xsx
 *Date: 2016年12月23日09:04:23
 ***************************************************************************************************/
-static MyState_TypeDef sendSelfTestStatus(ERROR_SelfTest selfTest)
+static MyRes sendSelfTestStatus(ERROR_SelfTest selfTest)
 {
 	if(NULL == xSelfTestStatusQueue)
 		xSelfTestStatusQueue = xQueueCreate(10, sizeof(ERROR_SelfTest));
@@ -176,10 +176,10 @@ void SelfTest_Function(void)
 *Author: xsx
 *Date: 2016年12月23日09:06:16
 ***************************************************************************************************/
-static MyState_TypeDef loadSystemData(void)
+static MyRes loadSystemData(void)
 {
 	SystemSetData * systemSetData = NULL;
-	MyState_TypeDef status = My_Fail;
+	MyRes status = My_Fail;
 	
 	systemSetData = MyMalloc(sizeof(SystemSetData));
 	
@@ -190,7 +190,7 @@ static MyState_TypeDef loadSystemData(void)
 		ReadSystemSetData(systemSetData);
 		
 		//如果crc错误表示读取失败，或者设备第一次开机，不存在配置文件，则恢复出厂设置
-		if(systemSetData->crc != CalModbusCRC16Fun1(systemSetData, SystemSetDataStructCrcSize))
+		if(systemSetData->crc != CalModbusCRC16Fun(systemSetData, SystemSetDataStructCrcSize, NULL))
 			setDefaultSystemSetData(systemSetData);								//恢复出厂设置
 		else
 			upDateSystemSetData(systemSetData);									//将读取的配置更新到内存中
@@ -218,7 +218,7 @@ static MyState_TypeDef loadSystemData(void)
 *Author: xsx
 *Date: 2016年12月23日15:39:25
 ***************************************************************************************************/
-static MyState_TypeDef testLed(void)
+static MyRes testLed(void)
 {
 	SetGB_LedValue(0);
 	vTaskDelay(100 / portTICK_RATE_MS);
@@ -246,7 +246,7 @@ static MyState_TypeDef testLed(void)
 *Author: xsx
 *Date: 2016年12月23日16:14:18
 ***************************************************************************************************/
-static MyState_TypeDef testADModel(void)
+static MyRes testADModel(void)
 {
 	double tempvalue1 = 0.0, tempvalue2 = 0.0;
 	float bili[7] = {1.874, 2.725, 3.656, 4.835, 5.878, 6.973, 8.328};
@@ -289,7 +289,7 @@ static MyState_TypeDef testADModel(void)
 *Author: xsx
 *Date: 2016年12月23日16:21:14
 ***************************************************************************************************/
-static MyState_TypeDef testMotol(void)
+static MyRes testMotol(void)
 {
 	unsigned char count = 0;
 	
@@ -352,7 +352,7 @@ static void deviceAdjustSelf(void)
 		
 		snprintf(deviceAdjust->result, 20, "Success");
 		
-		deviceAdjust->crc = CalModbusCRC16Fun1(deviceAdjust, DeviceAdjustStructCrcSize);
+		deviceAdjust->crc = CalModbusCRC16Fun(deviceAdjust, DeviceAdjustStructCrcSize, NULL);
 		
 		writeDeviceAdjustToFile(deviceAdjust);
 	}
@@ -378,7 +378,7 @@ static void deviceErrorTest(void)
 
 		snprintf(deviceError->result, 30, "random error test!");
 		
-		deviceError->crc = CalModbusCRC16Fun1(deviceError, DeviceErrorStructCrcSize);
+		deviceError->crc = CalModbusCRC16Fun(deviceError, DeviceErrorStructCrcSize, NULL);
 		
 		writeDeviceErrorToFile(deviceError);
 	}

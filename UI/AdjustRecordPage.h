@@ -22,7 +22,7 @@ typedef struct AdjustRecordPageBuffer_tag {
 	unsigned short lcdinput[100];
 }AdjustRecordPageBuffer;
 
-MyState_TypeDef createAdjustRecordActivity(Activity * thizActivity, Intent * pram);
+MyRes createAdjustRecordActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

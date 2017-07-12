@@ -83,7 +83,7 @@ static void vTestTask( void *pvParameters )
 }
 
 
-MyState_TypeDef StartTest(TestData * parm)
+MyRes StartTest(TestData * parm)
 {
 	if(pdPASS == xQueueSend( xStartTestQueue, &parm, 10/portTICK_RATE_MS ))
 		return My_Pass;
@@ -92,7 +92,7 @@ MyState_TypeDef StartTest(TestData * parm)
 }
 
 
-MyState_TypeDef TakeTestResult(ResultState *testsult)
+MyRes TakeTestResult(ResultState *testsult)
 {
 	if(pdPASS == xQueueReceive( xTestResultQueue, testsult,  10/portTICK_RATE_MS))
 		return My_Pass;

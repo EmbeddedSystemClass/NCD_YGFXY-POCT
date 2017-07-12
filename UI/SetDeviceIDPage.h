@@ -13,7 +13,7 @@ typedef struct SetDeviceIDPage_tag {
 	unsigned short lcdinput[100];
 }SetDeviceIDPage;
 
-MyState_TypeDef createSetDeviceIDActivity(Activity * thizActivity, Intent * pram);
+MyRes createSetDeviceIDActivity(Activity * thizActivity, Intent * pram);
 
 #endif
 

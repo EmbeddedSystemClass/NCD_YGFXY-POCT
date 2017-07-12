@@ -34,11 +34,11 @@
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-MyState_TypeDef writeDeviceQualityToFile(DeviceQuality * deviceQuality)
+MyRes writeDeviceQualityToFile(DeviceQuality * deviceQuality)
 {
 	FatfsFileInfo_Def * myfile = NULL;
 	DeviceRecordHeader * deviceRecordHeader = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(MyFileStructSize);
 	deviceRecordHeader = MyMalloc(DeviceRecordHeaderStructSize);
@@ -57,11 +57,11 @@ MyState_TypeDef writeDeviceQualityToFile(DeviceQuality * deviceQuality)
 			
 			//读取数据头
 			myfile->res = f_read(&(myfile->file), deviceRecordHeader, DeviceRecordHeaderStructSize, &(myfile->br));
-			if(deviceRecordHeader->crc != CalModbusCRC16Fun1(deviceRecordHeader, DeviceRecordHeaderStructCrcSize))
+			if(deviceRecordHeader->crc != CalModbusCRC16Fun(deviceRecordHeader, DeviceRecordHeaderStructCrcSize, NULL))
 			{
 				deviceRecordHeader->itemSize = 0;
-				deviceRecordHeader->uploadIndex = 0;
-				deviceRecordHeader->crc = CalModbusCRC16Fun1(deviceRecordHeader, DeviceRecordHeaderStructCrcSize);
+				deviceRecordHeader->userUpLoadIndex = 0;
+				deviceRecordHeader->crc = CalModbusCRC16Fun(deviceRecordHeader, DeviceRecordHeaderStructCrcSize, NULL);
 			}
 			
 			//先写一次数据头，防止没有数据头写数据异常
@@ -82,7 +82,7 @@ MyState_TypeDef writeDeviceQualityToFile(DeviceQuality * deviceQuality)
 			
 			//更新数据头
 			deviceRecordHeader->itemSize += 1;
-			deviceRecordHeader->crc = CalModbusCRC16Fun1(deviceRecordHeader, DeviceRecordHeaderStructCrcSize);
+			deviceRecordHeader->crc = CalModbusCRC16Fun(deviceRecordHeader, DeviceRecordHeaderStructCrcSize, NULL);
 			
 			f_lseek(&(myfile->file), 0);
 			myfile->res = f_write(&(myfile->file), deviceRecordHeader, DeviceRecordHeaderStructSize, &(myfile->bw));
@@ -100,10 +100,10 @@ MyState_TypeDef writeDeviceQualityToFile(DeviceQuality * deviceQuality)
 	return statues;
 }
 
-MyState_TypeDef readDeviceQualityFromFile(DeviceQualityReadPackge * readPackge)
+MyRes readDeviceQualityFromFile(DeviceQualityReadPackge * readPackge)
 {
 	FatfsFileInfo_Def * myfile = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	unsigned char i=0;
 	
 	myfile = MyMalloc(MyFileStructSize);
@@ -125,20 +125,20 @@ MyState_TypeDef readDeviceQualityFromFile(DeviceQualityReadPackge * readPackge)
 			
 			//读取数据头
 			myfile->res = f_read(&(myfile->file), &(readPackge->deviceRecordHeader), DeviceRecordHeaderStructSize, &(myfile->br));
-			if(readPackge->deviceRecordHeader.crc != CalModbusCRC16Fun1(&(readPackge->deviceRecordHeader), DeviceRecordHeaderStructCrcSize))
+			if(readPackge->deviceRecordHeader.crc != CalModbusCRC16Fun(&(readPackge->deviceRecordHeader), DeviceRecordHeaderStructCrcSize, NULL))
 				goto Finally;
 			
 			//如果pageRequest的crc错误，表示是按照上传索引读取数据进行上传
-			if(readPackge->pageRequest.crc != CalModbusCRC16Fun1(&(readPackge->pageRequest), PageRequestStructCrcSize))
+			if(readPackge->pageRequest.crc != CalModbusCRC16Fun(&(readPackge->pageRequest), PageRequestStructCrcSize, NULL))
 			{
-				if(readPackge->deviceRecordHeader.uploadIndex < readPackge->deviceRecordHeader.itemSize)
+				if(readPackge->deviceRecordHeader.userUpLoadIndex < readPackge->deviceRecordHeader.itemSize)
 				{
-					f_lseek(&(myfile->file), readPackge->deviceRecordHeader.uploadIndex * DeviceQualityStructSize + DeviceRecordHeaderStructSize);
+					f_lseek(&(myfile->file), readPackge->deviceRecordHeader.userUpLoadIndex * DeviceQualityStructSize + DeviceRecordHeaderStructSize);
 				
-					if((readPackge->deviceRecordHeader.itemSize - readPackge->deviceRecordHeader.uploadIndex) >= DeviceQualityRecordPageShowNum)
+					if((readPackge->deviceRecordHeader.itemSize - readPackge->deviceRecordHeader.userUpLoadIndex) >= DeviceQualityRecordPageShowNum)
 						f_read(&(myfile->file), readPackge->deviceQuality, DeviceQualityRecordPageShowNum * DeviceQualityStructSize, &(myfile->br));
 					else
-						f_read(&(myfile->file), readPackge->deviceQuality, (readPackge->deviceRecordHeader.itemSize - readPackge->deviceRecordHeader.uploadIndex) * DeviceQualityStructSize, &(myfile->br));
+						f_read(&(myfile->file), readPackge->deviceQuality, (readPackge->deviceRecordHeader.itemSize - readPackge->deviceRecordHeader.userUpLoadIndex) * DeviceQualityStructSize, &(myfile->br));
 				}
 			}
 			//如果pageRequest的crc正确，表示是按照pageRequest的请求内容进行读取数据
@@ -156,7 +156,7 @@ MyState_TypeDef readDeviceQualityFromFile(DeviceQualityReadPackge * readPackge)
 				
 				for(i=0; i<DeviceQualityRecordPageShowNum; i++)
 				{
-					if(readPackge->deviceQuality[i].crc == CalModbusCRC16Fun1(&readPackge->deviceQuality[i], DeviceQualityStructCrcSize))
+					if(readPackge->deviceQuality[i].crc == CalModbusCRC16Fun(&readPackge->deviceQuality[i], DeviceQualityStructCrcSize, NULL))
 						readPackge->readTotalNum++;
 				}
 			}
@@ -172,11 +172,11 @@ MyState_TypeDef readDeviceQualityFromFile(DeviceQualityReadPackge * readPackge)
 	return statues;
 }
 
-MyState_TypeDef plusDeviceQualityHeaderUpLoadIndexToFile(unsigned int index)
+MyRes plusDeviceQualityHeaderuserUpLoadIndexToFile(unsigned int index)
 {
 	FatfsFileInfo_Def * myfile = NULL;
 	DeviceRecordHeader * deviceRecordHeader = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(MyFileStructSize);
 	deviceRecordHeader = MyMalloc(DeviceRecordHeaderStructSize);
@@ -193,10 +193,10 @@ MyState_TypeDef plusDeviceQualityHeaderUpLoadIndexToFile(unsigned int index)
 
 			myfile->res = f_read(&(myfile->file), deviceRecordHeader, DeviceRecordHeaderStructSize, &(myfile->br));
 			if((FR_OK == myfile->res) && (DeviceRecordHeaderStructSize == myfile->br) 
-				&& (deviceRecordHeader->crc == CalModbusCRC16Fun1(deviceRecordHeader, DeviceRecordHeaderStructCrcSize)))
+				&& (deviceRecordHeader->crc == CalModbusCRC16Fun(deviceRecordHeader, DeviceRecordHeaderStructCrcSize, NULL)))
 			{
-				deviceRecordHeader->uploadIndex += index;
-				deviceRecordHeader->crc = CalModbusCRC16Fun1(deviceRecordHeader, DeviceRecordHeaderStructCrcSize);
+				deviceRecordHeader->userUpLoadIndex += index;
+				deviceRecordHeader->crc = CalModbusCRC16Fun(deviceRecordHeader, DeviceRecordHeaderStructCrcSize, NULL);
 				
 				f_lseek(&(myfile->file), 0);
 				myfile->res = f_write(&(myfile->file), deviceRecordHeader, DeviceRecordHeaderStructSize, &(myfile->bw));
@@ -213,7 +213,7 @@ MyState_TypeDef plusDeviceQualityHeaderUpLoadIndexToFile(unsigned int index)
 	return statues;
 }
 
-MyState_TypeDef deleteDeviceQualityFile(void)
+MyRes deleteDeviceQualityFile(void)
 {
 	FRESULT res;
 	

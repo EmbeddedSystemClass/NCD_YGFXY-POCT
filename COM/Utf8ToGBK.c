@@ -1335,7 +1335,7 @@ const unsigned short uni2gbk_table[20902] =
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-MyState_TypeDef utf8ConvertToGBK(void * utf8Str, unsigned short utf8StrLen, void * gbkBuffer, unsigned short * gbkStrLen)
+MyRes utf8ConvertToGBK(void * utf8Str, unsigned short utf8StrLen, void * gbkBuffer, unsigned int * gbkStrLen)
 {
 	unsigned short i = 0, len = 0;
 	int temp1 = 0, temp2, temp3;

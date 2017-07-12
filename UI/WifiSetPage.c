@@ -25,7 +25,6 @@ static WifiPageBuffer * S_WifiPageBuffer = NULL;
 static void RefreshWifi(void);
 static void DisListText(void);
 static void CheckIsNeedKey(void);
-static MyState_TypeDef connectWifiFun(void);
 
 static void activityStart(void);
 static void activityInput(unsigned char *pbuf , unsigned short len);
@@ -33,7 +32,7 @@ static void activityFresh(void);
 static void activityHide(void);
 static void activityResume(void);
 static void activityDestroy(void);
-static MyState_TypeDef activityBufferMalloc(void);
+static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 /******************************************************************************************/
 /******************************************************************************************/
@@ -50,7 +49,7 @@ static void activityBufferFree(void);
 *Author: xsx
 *Date: 2016Äê12ÔÂ21ÈÕ09:00:09
 ***************************************************************************************************/
-MyState_TypeDef createWifiSetActivity(Activity * thizActivity, Intent * pram)
+MyRes createWifiSetActivity(Activity * thizActivity, Intent * pram)
 {
 	if(NULL == thizActivity)
 		return My_Fail;
@@ -209,11 +208,6 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
-	if(S_WifiPageBuffer)
-	{
-
-	}
-	
 	SelectPage(112);
 }
 
@@ -243,7 +237,7 @@ static void activityDestroy(void)
 *Author: xsx
 *Date: 
 ***************************************************************************************************/
-static MyState_TypeDef activityBufferMalloc(void)
+static MyRes activityBufferMalloc(void)
 {
 	if(NULL == S_WifiPageBuffer)
 	{
@@ -410,21 +404,3 @@ static void CheckIsNeedKey(void)
 	}
 }
 
-static MyState_TypeDef connectWifiFun(void)
-{
-	SendKeyCode(4);
-
-	if(My_Fail == ConnectWifi(S_WifiPageBuffer->wifip))
-	{
-		SendKeyCode(16);
-		vTaskDelay(100 / portTICK_RATE_MS);
-		SendKeyCode(2);
-	}
-	else
-	{
-		SendKeyCode(16);
-
-		SendKeyCode(1);
-		
-	}
-}

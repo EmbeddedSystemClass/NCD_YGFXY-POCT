@@ -45,10 +45,10 @@
 *Author: xsx
 *Date: 2016年12月8日10:55:53
 ***************************************************************************************************/
-MyState_TypeDef WriteAppFile(char * file, unsigned short len, bool isNew)
+MyRes WriteAppFile(char * file, unsigned short len, bool isNew)
 {
 	FatfsFileInfo_Def * myfile = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
 	
@@ -89,11 +89,11 @@ MyState_TypeDef WriteAppFile(char * file, unsigned short len, bool isNew)
 *Author: xsx
 *Date: 2017年2月16日14:55:26
 ***************************************************************************************************/
-MyState_TypeDef ReadAppFile(unsigned int startAddr, unsigned char * dataBuf, unsigned short size, unsigned short *br,
+MyRes ReadAppFile(unsigned int startAddr, unsigned char * dataBuf, unsigned short size, unsigned short *br,
 	unsigned int *fileSize)
 {
 	FatfsFileInfo_Def * myfile = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
 	
@@ -137,10 +137,10 @@ MyState_TypeDef ReadAppFile(unsigned int startAddr, unsigned char * dataBuf, uns
 *Author: xsx
 *Date: 2017年2月16日15:12:19
 ***************************************************************************************************/
-MyState_TypeDef checkNewAppFileIsExist(void)
+MyRes checkNewAppFileIsExist(void)
 {
 	FatfsFileInfo_Def * myfile = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
 	
@@ -172,7 +172,7 @@ MyState_TypeDef checkNewAppFileIsExist(void)
 *Author: xsx
 *Date: 2017年2月16日15:13:20
 ***************************************************************************************************/
-MyState_TypeDef deleteAppFileIfExist(void)
+MyRes deleteAppFileIfExist(void)
 {
 	FRESULT res;
 	

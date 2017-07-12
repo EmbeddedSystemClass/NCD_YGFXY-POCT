@@ -33,7 +33,7 @@ static void activityFresh(void);
 static void activityHide(void);
 static void activityResume(void);
 static void activityDestroy(void);
-static MyState_TypeDef activityBufferMalloc(void);
+static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
 static void ShowList(void);
@@ -54,7 +54,7 @@ static void SelectUser(unsigned char index);
 *Author: xsx
 *Date: 2016Äê12ÔÂ21ÈÕ09:00:09
 ***************************************************************************************************/
-MyState_TypeDef createSelectUserActivity(Activity * thizActivity, Intent * pram)
+MyRes createSelectUserActivity(Activity * thizActivity, Intent * pram)
 {
 	if(NULL == thizActivity)
 		return My_Fail;
@@ -148,7 +148,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			{
 				S_UserPageBuffer->tempUser = &S_UserPageBuffer->device.operators[(S_UserPageBuffer->pageindex)*MaxPageShowOperatorSize];
 			
-				if(S_UserPageBuffer->tempUser->crc == CalModbusCRC16Fun1(S_UserPageBuffer->tempUser, sizeof(Operator)-2))
+				if(S_UserPageBuffer->tempUser->crc == CalModbusCRC16Fun(S_UserPageBuffer->tempUser, sizeof(Operator)-2, NULL))
 				{
 					S_UserPageBuffer->pageindex++;
 						
@@ -271,7 +271,7 @@ static void activityDestroy(void)
 *Author: xsx
 *Date: 
 ***************************************************************************************************/
-static MyState_TypeDef activityBufferMalloc(void)
+static MyRes activityBufferMalloc(void)
 {
 	if(NULL == S_UserPageBuffer)
 	{
@@ -358,7 +358,7 @@ static void SelectUser(unsigned char index)
 		
 		S_UserPageBuffer->tempUser2 = &(S_UserPageBuffer->device.operators[i]);
 		
-		if(S_UserPageBuffer->tempUser2->crc == CalModbusCRC16Fun1(S_UserPageBuffer->tempUser2, sizeof(Operator)-2))
+		if(S_UserPageBuffer->tempUser2->crc == CalModbusCRC16Fun(S_UserPageBuffer->tempUser2, sizeof(Operator)-2, NULL))
 		{
 			BasicPic(0x1240, 1, 137, 11, 10, 303, 79, 363, 141+(S_UserPageBuffer->selectindex-1)*72);	
 		}

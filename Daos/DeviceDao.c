@@ -21,8 +21,7 @@
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
-
-
+static MyLock myDeviceLock;													//设备信息文件锁
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -34,10 +33,10 @@
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-MyState_TypeDef SaveDeviceToFile(Device * device)
+MyRes SaveDeviceToFile(Device * device)
 {
 	FatfsFileInfo_Def * myfile = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
 	
@@ -45,7 +44,7 @@ MyState_TypeDef SaveDeviceToFile(Device * device)
 	{
 		memset(myfile, 0, sizeof(FatfsFileInfo_Def));
 
-		myfile->res = f_open(&(myfile->file), "0:/Device.ncd", FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
+		myfile->res = f_open(&(myfile->file), DeviceFileName, FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
 			
 		if(FR_OK == myfile->res)
 		{
@@ -65,10 +64,10 @@ MyState_TypeDef SaveDeviceToFile(Device * device)
 	return statues;
 }
 
-MyState_TypeDef ReadDeviceFromFile(Device * device)
+MyRes ReadDeviceFromFile(Device * device)
 {
 	FatfsFileInfo_Def * myfile = NULL;
-	MyState_TypeDef statues = My_Fail;
+	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
 
@@ -76,7 +75,7 @@ MyState_TypeDef ReadDeviceFromFile(Device * device)
 	{
 		memset(myfile, 0, sizeof(FatfsFileInfo_Def));
 
-		myfile->res = f_open(&(myfile->file), "0:/Device.ncd", FA_READ);
+		myfile->res = f_open(&(myfile->file), DeviceFileName, FA_READ);
 		
 		if(FR_OK == myfile->res)
 		{
@@ -91,7 +90,7 @@ MyState_TypeDef ReadDeviceFromFile(Device * device)
 		else if(FR_NO_FILE == myfile->res)
 		{
 			memset(device, 0, DeviceStructSize);
-			device->crc = CalModbusCRC16Fun1(device, DeviceStructCrcSize);
+			device->crc = CalModbusCRC16Fun(device, DeviceStructCrcSize, NULL);
 			
 			statues = My_Pass;
 		}
@@ -101,16 +100,21 @@ MyState_TypeDef ReadDeviceFromFile(Device * device)
 	return statues;
 }
 
-MyState_TypeDef deleteDeviceFile(void)
+MyRes deleteDeviceFile(void)
 {
 	FRESULT res;
 	
-	res = f_unlink("0:/Device.ncd");
+	res = f_unlink(DeviceFileName);
 	
 	if((FR_OK == res) || (FR_NO_FILE == res))
 		return My_Pass;
 	else
 		return My_Fail;
+}
+
+MyLock * getMyDeviceLock(void)
+{
+	return &myDeviceLock;
 }
 
 /****************************************end of file************************************************/

@@ -30,7 +30,7 @@ typedef struct SystemSetData_Tag
 void setDefaultSystemSetData(SystemSetData * systemSetData);
 const SystemSetData * getGBSystemSetData(void);
 void upDateSystemSetData(SystemSetData * systemSetData);
-MyState_TypeDef addAdjPram(SystemSetData * systemSetData, AdjustData * adjData);
+MyRes addAdjPram(SystemSetData * systemSetData, AdjustData * adjData);
 void getAdjPram(const SystemSetData * systemSetData, AdjustData * adjData);
 void setIsShowRealValue(bool isShow);
 bool IsShowRealValue(void);
